@@ -41,6 +41,7 @@ async function existsFile(path: string): Promise<boolean> {
   }
 }
 
+/* initialize the compiler wasm module. */
 async function initWasm() {
   const mcDir = Deno.env.get("MODULES_CACHE_DIR");
   if (mcDir) {
@@ -61,7 +62,7 @@ async function initWasm() {
   }
 }
 
-/** parse export names */
+/** Parse export names of the module. */
 export async function parseExportNames(
   specifier: string,
   code: string,
@@ -70,7 +71,7 @@ export async function parseExportNames(
   return parseExportNamesWasmFn(specifier, code);
 }
 
-/** fast transform without transpile code raw syntax */
+/** Parse the deps of the modules. */
 export async function parseDeps(
   specifier: string,
   code: string,
@@ -81,7 +82,7 @@ export async function parseDeps(
 }
 
 /**
- * Transforms the module with esbuild/swc.
+ * Transforms the JSX/TS module into a JS module.
  *
  * ```tsx
  * transform(
