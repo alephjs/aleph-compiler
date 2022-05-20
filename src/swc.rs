@@ -129,21 +129,21 @@ impl SWC {
           .unwrap_or(&import_source)
           .strip_suffix(runtime)
           .unwrap()
-          .into();
+          .to_string();
         if !is_jsx {
           resolver.deps.pop();
         }
         react::Options {
           runtime: Some(react::Runtime::Automatic),
-          import_source,
+          import_source: Some(import_source),
           ..Default::default()
         }
       } else {
         if let Some(jsx_runtime) = &jsx_runtime {
           match jsx_runtime.as_str() {
             "preact" => react::Options {
-              pragma: "h".into(),
-              pragma_frag: "Fragment".into(),
+              pragma: Some("h".into()),
+              pragma_frag: Some("Fragment".into()),
               ..Default::default()
             },
             _ => react::Options { ..Default::default() },
@@ -164,7 +164,8 @@ impl SWC {
         resolve_fold(resolver.clone(), options.strip_data_export, false),
         decorators::decorators(decorators::Config {
           legacy: true,
-          emit_metadata: false
+          emit_metadata: false,
+          use_define_for_class_fields: false,
         }),
         Optional::new(
           compat::es2022::es2022(
@@ -244,6 +245,7 @@ impl SWC {
             }),
             self.source_map.clone(),
             Some(&self.comments),
+            top_level_mark
           ),
           !specifier_is_remote && is_react
         ),
@@ -252,8 +254,8 @@ impl SWC {
             self.source_map.clone(),
             Some(&self.comments),
             react::Options {
-              use_builtins: true,
-              development: is_dev,
+              use_builtins: Some(true),
+              development: Some(is_dev),
               ..react_options
             },
             top_level_mark
@@ -261,9 +263,7 @@ impl SWC {
           is_jsx
         ),
         Optional::new(hmr(resolver.clone()), is_dev && !specifier_is_remote),
-        dce::dce(dce::Config {
-          module_mark: Some(unresolved_mark)
-        }),
+        dce::dce(dce::Config { module_mark: None }, unresolved_mark),
         Optional::new(
           as_folder(MinifierPass {
             cm: self.source_map.clone(),
@@ -277,7 +277,7 @@ impl SWC {
         fixer(Some(&self.comments)),
       );
 
-      let (code, map) = self.emit(passes, options.source_map, options.minify).unwrap();
+      let (code, map) = self.emit(passes, options).unwrap();
 
       // remove dead deps by tree-shaking
       if options.strip_data_export {
@@ -297,21 +297,25 @@ impl SWC {
   }
 
   /// Apply transform with the fold.
-  pub fn emit<T: Fold>(
-    &self,
-    mut fold: T,
-    source_map: bool,
-    minify: bool,
-  ) -> Result<(String, Option<String>), anyhow::Error> {
+  pub fn emit<T: Fold>(&self, mut fold: T, options: &EmitOptions) -> Result<(String, Option<String>), anyhow::Error> {
     let program = Program::Module(self.module.clone());
     let program = helpers::HELPERS.set(&helpers::Helpers::new(false), || program.fold_with(&mut fold));
     let mut buf = Vec::new();
     let mut src_map_buf = Vec::new();
-    let src_map = if source_map { Some(&mut src_map_buf) } else { None };
+    let src_map = if options.source_map {
+      Some(&mut src_map_buf)
+    } else {
+      None
+    };
+
     {
       let writer = Box::new(JsWriter::new(self.source_map.clone(), "\n", &mut buf, src_map));
       let mut emitter = swc_ecmascript::codegen::Emitter {
-        cfg: swc_ecmascript::codegen::Config { minify },
+        cfg: swc_ecmascript::codegen::Config {
+          target: options.target,
+          minify: options.minify,
+          ascii_only: false,
+        },
         comments: Some(&self.comments),
         cm: self.source_map.clone(),
         wr: writer,
@@ -321,7 +325,7 @@ impl SWC {
 
     // output
     let src = String::from_utf8(buf).unwrap();
-    if source_map {
+    if options.source_map {
       let mut buf = Vec::new();
       self
         .source_map
