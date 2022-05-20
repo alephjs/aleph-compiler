@@ -5,10 +5,6 @@
     "editor.defaultFormatter": "denoland.vscode-deno",
     "editor.formatOnSave": true
   },
-  "[typescriptreact]": {
-    "editor.defaultFormatter": "denoland.vscode-deno",
-    "editor.formatOnSave": true
-  },
   "[rust]": {
     "editor.defaultFormatter": "matklad.rust-analyzer",
     "editor.formatOnSave": true,
