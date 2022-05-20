@@ -40,7 +40,10 @@ if (import.meta.main) {
       "import { red } from 'https://deno.land/std@0.136.0/fmt/colors.ts';" +
         jsCode
           .replace(`import * as __wbg_star0 from 'env';`, "")
-          .replace(`imports['env'] = __wbg_star0;`, `imports['env'] = { now: () => Date.now() };`)
+          .replace(
+            `imports['env'] = __wbg_star0;`,
+            `imports['env'] = { now: () => Date.now() };`,
+          )
           .replace(
             "console.error(getStringFromWasm0(arg0, arg1));",
             `
@@ -59,8 +62,12 @@ if (import.meta.main) {
     const changed = ((wasmSize - prevWasmSize) / prevWasmSize) * 100;
     if (changed) {
       console.log(
-        `${dim("[INFO]")}: wasm.js ${changed < 0 ? "-" : "+"}${Math.abs(changed).toFixed(2)}% (${
-          [prevWasmSize, wasmSize].filter(Boolean).map((n) => (n / (1024 * 1024)).toFixed(2) + "MB")
+        `${dim("[INFO]")}: wasm.js ${changed < 0 ? "-" : "+"}${
+          Math.abs(changed).toFixed(2)
+        }% (${
+          [prevWasmSize, wasmSize].filter(Boolean).map((n) =>
+            (n / (1024 * 1024)).toFixed(2) + "MB"
+          )
             .join(" -> ")
         })`,
       );

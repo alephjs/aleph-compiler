@@ -10,7 +10,15 @@ export type TransformOptions = {
   jsxRuntimeVersion?: string;
   lang?: "ts" | "tsx" | "js" | "jsx";
   stripDataExport?: boolean;
-  target?: "es2015" | "es2016" | "es2017" | "es2018" | "es2019" | "es2020" | "es2021" | "es2022";
+  target?:
+    | "es2015"
+    | "es2016"
+    | "es2017"
+    | "es2018"
+    | "es2019"
+    | "es2020"
+    | "es2021"
+    | "es2022";
 };
 
 export type TransformResult = {
@@ -109,7 +117,10 @@ export interface CSSModuleExport {
   readonly composes: CSSModuleReference[];
 }
 
-export type CSSModuleReference = LocalCSSModuleReference | GlobalCSSModuleReference | DependencyCSSModuleReference;
+export type CSSModuleReference =
+  | LocalCSSModuleReference
+  | GlobalCSSModuleReference
+  | DependencyCSSModuleReference;
 
 export interface LocalCSSModuleReference {
   readonly type: "local";
