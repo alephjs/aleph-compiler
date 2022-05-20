@@ -1,4 +1,5 @@
 use super::*;
+use regex::Regex;
 use std::collections::HashMap;
 
 fn transform(specifer: &str, source: &str, is_dev: bool, options: &EmitOptions) -> (String, Rc<RefCell<Resolver>>) {
@@ -37,7 +38,7 @@ fn transform(specifer: &str, source: &str, is_dev: bool, options: &EmitOptions) 
 #[test]
 fn typescript() {
   let source = r#"
-       enum D {
+      enum D {
         A,
         B,
         C,
@@ -54,6 +55,7 @@ fn typescript() {
       }
 
       export class A {
+        #a: string;
         private b: string;
         protected c: number = 1;
         e: "foo";
@@ -66,8 +68,8 @@ fn typescript() {
       }
     "#;
   let (code, _) = transform("mod.ts", source, false, &EmitOptions::default());
-  assert!(code.contains("var D;\n(function(D) {\n"));
-  assert!(code.contains("_applyDecoratedDescriptor("));
+  assert!(code.contains("var D;"));
+  assert!(Regex::new(r"\[\s*enumerable\(false\)\s*\]").unwrap().is_match(&code));
 }
 
 #[test]
