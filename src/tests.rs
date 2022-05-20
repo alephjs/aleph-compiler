@@ -174,6 +174,24 @@ fn strip_data_export() {
           return json({ count })
          }
       }
+      export const GET = (req: Request) => {
+        return json({ count })
+      }
+      export const POST = (req: Request) => {
+        return json({ count })
+      }
+      export const PUT = (req: Request) => {
+        return json({ count })
+      }
+      export function PATCH(req: Request) {
+        return json({ count })
+      }
+      export function DELETE(req: Request) {
+        return json({ count })
+      }
+      export function log(msg: string) {
+        console.log(msg)
+      }
     "#;
   let (code, r) = transform(
     "./app.tsx",
@@ -185,6 +203,12 @@ fn strip_data_export() {
     },
   );
   assert!(code.contains("export const data = true"));
+  assert!(code.contains("export const GET = true"));
+  assert!(code.contains("export const POST = true"));
+  assert!(code.contains("export const PUT = true"));
+  assert!(code.contains("export function PATCH() {}"));
+  assert!(code.contains("export function DELETE() {}"));
+  assert!(code.contains("export function log(msg) {"));
   assert!(!code.contains("import { json } from \"./helper.ts\""));
   assert!(!code.contains("const count = 0"));
   assert_eq!(r.borrow().deps.len(), 0);

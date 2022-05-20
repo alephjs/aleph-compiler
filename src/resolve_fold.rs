@@ -110,9 +110,14 @@ impl Fold for ResolveFold {
                 let mut i = 0;
                 for decl in &var.decls {
                   if let Pat::Ident(bi) = &decl.name {
-                    if bi.id.sym.eq("data") && decl.init.is_some() {
-                      data_export_idx = i;
-                      break;
+                    if decl.init.is_some() {
+                      match bi.id.sym.as_ref() {
+                        "data" | "GET" | "POST" | "PUT" | "PATCH" | "DELETE" => {
+                          data_export_idx = i;
+                          break;
+                        }
+                        _ => {}
+                      }
                     }
                   }
                   i += 1;
@@ -149,6 +154,43 @@ impl Fold for ResolveFold {
                 ModuleItem::ModuleDecl(ModuleDecl::ExportDecl(ExportDecl {
                   span,
                   decl: Decl::Var(var),
+                }))
+              }
+            }
+            // match: export function GET { ... }
+            ModuleDecl::ExportDecl(ExportDecl {
+              decl: Decl::Fn(decl),
+              span,
+            }) => {
+              let is_api_method = match decl.ident.sym.as_ref() {
+                "GET" | "POST" | "PUT" | "PATCH" | "DELETE" => true,
+                _ => false,
+              };
+              if self.strip_data_export && is_api_method {
+                ModuleItem::ModuleDecl(ModuleDecl::ExportDecl(ExportDecl {
+                  span: DUMMY_SP,
+                  decl: Decl::Fn(FnDecl {
+                    ident: decl.ident.clone(),
+                    declare: decl.declare,
+                    function: Function {
+                      span: DUMMY_SP,
+                      params: vec![],
+                      decorators: vec![],
+                      body: Some(BlockStmt {
+                        span: DUMMY_SP,
+                        stmts: vec![],
+                      }),
+                      is_generator: false,
+                      is_async: false,
+                      type_params: None,
+                      return_type: None,
+                    },
+                  }),
+                }))
+              } else {
+                ModuleItem::ModuleDecl(ModuleDecl::ExportDecl(ExportDecl {
+                  span,
+                  decl: Decl::Fn(decl),
                 }))
               }
             }
