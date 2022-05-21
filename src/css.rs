@@ -169,10 +169,10 @@ pub enum CompileError<'i> {
 impl<'i> CompileError<'i> {
   fn reason(&self) -> String {
     match self {
-      CompileError::ParseError(e) => e.kind.to_string(),
-      CompileError::MinifyError(err) => err.kind.to_string(),
-      CompileError::PrinterError(err) => err.kind.to_string(),
-      CompileError::BundleError(err) => err.kind.to_string(),
+      CompileError::ParseError(e) => format!("{}", e),
+      CompileError::MinifyError(e) => format!("{}", e),
+      CompileError::PrinterError(e) => format!("{}", e),
+      CompileError::BundleError(e) => format!("{}", e),
       _ => "Unknown error".into(),
     }
   }
