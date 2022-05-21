@@ -49,10 +49,9 @@ if (import.meta.main) {
             `
               const msg = getStringFromWasm0(arg0, arg1);
               if (msg.includes('DiagnosticBuffer(["')) {
-                const diagnostic = msg.split('DiagnosticBuffer(["')[1].split('"])')[0]
-                console.error(red("ERROR"), "swc:", diagnostic)
+                throw new Error(diagnostic);
               } else {
-                console.error(red("ERROR"), msg)
+                throw new Error(msg);
               }
             `,
           ),
