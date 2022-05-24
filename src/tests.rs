@@ -26,7 +26,6 @@ fn transform(specifer: &str, source: &str, is_dev: bool, options: &EmitOptions) 
     Some("80".into()),
     importmap,
     graph_versions,
-    None,
     Some("1.0.0".into()),
     is_dev,
     true,

@@ -2,8 +2,7 @@ export type TransformOptions = {
   alephPkgUri?: string;
   importMap?: string;
   graphVersions?: Record<string, string>;
-  initialGraphVersion?: string;
-  deploymentId?: string;
+  globalVersion?: string;
   isDev?: boolean;
   jsxImportSource?: string;
   jsxRuntime?: "react" | "preact";

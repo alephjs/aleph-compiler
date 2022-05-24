@@ -41,14 +41,13 @@ pub struct Resolver {
   /// development mode
   pub is_dev: bool,
   /// the deployment id
-  pub deployment_id: Option<String>,
+  pub global_version: Option<String>,
   // internal
   import_map: ImportMap,
   resolve_remote_deps: bool,
   jsx_runtime_version: Option<String>,
   jsx_runtime_cdn_version: Option<String>,
   graph_versions: HashMap<String, String>,
-  initial_graph_version: Option<String>,
 }
 
 impl Resolver {
@@ -60,8 +59,7 @@ impl Resolver {
     jsx_runtime_cdn_version: Option<String>,
     import_map: ImportMap,
     graph_versions: HashMap<String, String>,
-    initial_graph_version: Option<String>,
-    deployment_id: Option<String>,
+    global_version: Option<String>,
     is_dev: bool,
     resolve_remote_deps: bool,
   ) -> Self {
@@ -75,8 +73,7 @@ impl Resolver {
       jsx_runtime_cdn_version,
       import_map,
       graph_versions,
-      initial_graph_version,
-      deployment_id,
+      global_version,
       is_dev,
       resolve_remote_deps,
     }
@@ -204,11 +201,13 @@ impl Resolver {
       // fix remote url to local path if allowed
       if self.resolve_remote_deps {
         import_url = self.to_local_path(&import_url);
-        if let Some(deployment_id) = &self.deployment_id {
-          if import_url.contains("?") {
-            import_url = format!("{}&v={}", import_url, deployment_id);
-          } else {
-            import_url = format!("{}?v={}", import_url, deployment_id);
+        if !self.is_dev {
+          if let Some(global_version) = &self.global_version {
+            if import_url.contains("?") {
+              import_url = format!("{}&v={}", import_url, global_version);
+            } else {
+              import_url = format!("{}?v={}", import_url, global_version);
+            }
           }
         }
       }
@@ -216,10 +215,8 @@ impl Resolver {
       // apply graph version if exists
       let v = if self.graph_versions.contains_key(&fixed_url) {
         self.graph_versions.get(&fixed_url)
-      } else if let Some(deployment_id) = &self.deployment_id {
-        Some(deployment_id)
       } else {
-        self.initial_graph_version.as_ref()
+        self.global_version.as_ref()
       };
       if let Some(version) = v {
         if import_url.contains("?") {
