@@ -122,7 +122,9 @@ fn jsx_automtic() {
       ..Default::default()
     },
   );
-  assert!(code.contains("import { jsx as _jsx, Fragment as _Fragment } from \"/-/esm.sh/react@18.0.0/jsx-runtime\""));
+  assert!(
+    code.contains("import { jsx as _jsx, Fragment as _Fragment } from \"/-/esm.sh/react@18.0.0/jsx-runtime?v=1.0.0\"")
+  );
   assert!(code.contains("_jsx(_Fragment, {"));
   assert!(code.contains("_jsx(\"h1\", {"));
   assert!(code.contains("children: \"Hello world!\""));

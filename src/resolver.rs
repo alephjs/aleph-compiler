@@ -40,12 +40,13 @@ pub struct Resolver {
   pub jsx_runtime: Option<String>,
   /// development mode
   pub is_dev: bool,
+  /// the deployment id
+  pub deployment_id: Option<String>,
   // internal
   import_map: ImportMap,
   resolve_remote_deps: bool,
   jsx_runtime_version: Option<String>,
   jsx_runtime_cdn_version: Option<String>,
-  deployment_id: Option<String>,
   graph_versions: HashMap<String, String>,
   initial_graph_version: Option<String>,
 }

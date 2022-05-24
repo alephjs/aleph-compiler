@@ -120,6 +120,7 @@ impl SWC {
         self.specifier.ends_with(".ts") || self.specifier.ends_with(".mts") || self.specifier.ends_with(".tsx");
       let is_jsx = self.specifier.ends_with(".tsx") || self.specifier.ends_with(".jsx");
       let is_dev = resolver.borrow().is_dev;
+      let deployment_id = resolver.borrow().deployment_id.clone();
       let react_options = if let Some(jsx_import_source) = &options.jsx_import_source {
         let mut resolver = resolver.borrow_mut();
         let runtime = if is_dev { "/jsx-dev-runtime" } else { "/jsx-runtime" };
@@ -278,7 +279,7 @@ impl SWC {
         fixer(Some(&self.comments)),
       );
 
-      let (code, map) = self.emit(passes, options).unwrap();
+      let (mut code, map) = self.emit(passes, options).unwrap();
 
       // remove dead deps by tree-shaking
       if options.strip_data_export {
@@ -291,6 +292,20 @@ impl SWC {
           }
         }
         resolver.deps = deps;
+      }
+
+      if let Some(deployment_id) = deployment_id {
+        let mut has_jsx_runtime = false;
+        let resolver = resolver.borrow();
+        for dep in &resolver.deps {
+          if dep.specifier.ends_with("/jsx-runtime") {
+            has_jsx_runtime = true;
+            break;
+          }
+        }
+        if has_jsx_runtime {
+          code = code.replace("/jsx-runtime\"", format!("/jsx-runtime?v={}\"", deployment_id).as_str());
+        }
       }
 
       Ok((code, map))
