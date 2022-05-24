@@ -3,6 +3,7 @@ export type TransformOptions = {
   importMap?: string;
   graphVersions?: Record<string, string>;
   initialGraphVersion?: string;
+  deploymentId?: string;
   isDev?: boolean;
   jsxImportSource?: string;
   jsxRuntime?: "react" | "preact";

@@ -22,11 +22,12 @@ fn transform(specifer: &str, source: &str, is_dev: bool, options: &EmitOptions) 
     specifer,
     "https://deno.land/x/aleph",
     Some("react".into()),
-    Some("18".into()),
-    Some("64".into()),
+    Some("18.0.0".into()),
+    Some("80".into()),
     importmap,
     graph_versions,
     None,
+    Some("1.0.0".into()),
     is_dev,
     true,
   )));
@@ -76,7 +77,7 @@ fn typescript() {
 fn import_resolving() {
   let source = r#"
       import React from "react"
-      import React from "https://cdn.esm.sh/v66/react-dom@16.0.4"
+      import React from "https://esm.sh/v75/react-dom@16.0.4/es2020/react-dom.js"
       import { foo } from "~/foo.ts"
       import Layout from "./Layout.tsx"
       import "https://esm.sh/@fullcalendar/daygrid?css&dev"
@@ -91,14 +92,14 @@ fn import_resolving() {
       }, 1000)
     "#;
   let (code, _) = transform("./pages/blog/$id.tsx", source, false, &EmitOptions::default());
-  assert!(code.contains("\"/-/esm.sh/react@18\""));
-  assert!(code.contains("\"/-/cdn.esm.sh/v64/react-dom@18\""));
+  assert!(code.contains("\"/-/esm.sh/react@18.0.0?v=1.0.0\""));
+  assert!(code.contains("\"/-/esm.sh/v80/react-dom@18.0.0/es2020/react-dom.js?v=1.0.0\""));
   assert!(code.contains("\"../../foo.ts?v=100\""));
-  assert!(code.contains("\"./Layout.tsx\""));
-  assert!(code.contains("\"/-/esm.sh/@fullcalendar/daygrid?css&dev&module\""));
-  assert!(code.contains("\"../../style/app.css?module\""));
-  assert!(code.contains("import(\"/-/esm.sh/asksomeonelse\")"));
-  assert!(code.contains("new Worker(\"/-/esm.sh/asksomeonelse\")"));
+  assert!(code.contains("\"./Layout.tsx?v=1.0.0\""));
+  assert!(code.contains("\"/-/esm.sh/@fullcalendar/daygrid?css&dev&module&v=1.0.0\""));
+  assert!(code.contains("\"../../style/app.css?module&v=1.0.0\""));
+  assert!(code.contains("import(\"/-/esm.sh/asksomeonelse?v=1.0.0\")"));
+  assert!(code.contains("new Worker(\"/-/esm.sh/asksomeonelse?v=1.0.0\")"));
 }
 
 #[test]
@@ -121,13 +122,13 @@ fn jsx_automtic() {
       ..Default::default()
     },
   );
-  assert!(code.contains("import { jsx as _jsx, Fragment as _Fragment } from \"/-/esm.sh/react@18/jsx-runtime\""));
+  assert!(code.contains("import { jsx as _jsx, Fragment as _Fragment } from \"/-/esm.sh/react@18.0.0/jsx-runtime\""));
   assert!(code.contains("_jsx(_Fragment, {"));
   assert!(code.contains("_jsx(\"h1\", {"));
   assert!(code.contains("children: \"Hello world!\""));
   assert_eq!(
     resolver.borrow().deps.get(0).unwrap().specifier,
-    "https://esm.sh/react@18/jsx-runtime"
+    "https://esm.sh/react@18.0.0/jsx-runtime"
   );
 }
 

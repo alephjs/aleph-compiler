@@ -125,10 +125,11 @@ impl SWC {
         let runtime = if is_dev { "/jsx-dev-runtime" } else { "/jsx-runtime" };
         let import_source = resolver.resolve(&(jsx_import_source.to_owned() + runtime), false, None);
         let import_source = import_source
-          .strip_suffix("?dev")
+          .split("?")
+          .next()
           .unwrap_or(&import_source)
           .strip_suffix(runtime)
-          .unwrap()
+          .unwrap_or(&import_source)
           .to_string();
         if !is_jsx {
           resolver.deps.pop();

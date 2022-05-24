@@ -45,6 +45,9 @@ pub struct Options {
   #[serde(default)]
   pub initial_graph_version: Option<String>,
 
+  #[serde(default)]
+  pub deployment_id: Option<String>,
+
   #[serde(default = "default_target")]
   pub target: String,
 
@@ -112,6 +115,7 @@ pub fn parse_deps(specifier: &str, code: &str, options: JsValue) -> Result<JsVal
     importmap,
     HashMap::new(),
     None,
+    None,
     false,
     false,
   )));
@@ -144,6 +148,7 @@ pub fn transform(specifier: &str, code: &str, options: JsValue) -> Result<JsValu
     importmap,
     options.graph_versions,
     options.initial_graph_version,
+    options.deployment_id,
     options.is_dev,
     true,
   )));
