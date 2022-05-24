@@ -2,6 +2,6 @@
   "recommendations": [
     "editorconfig.editorconfig",
     "denoland.vscode-deno",
-    "matklad.rust-analyzer"
+    "rust-lang.rust-analyzer"
   ]
 }

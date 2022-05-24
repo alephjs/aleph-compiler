@@ -6,7 +6,7 @@
     "editor.formatOnSave": true
   },
   "[rust]": {
-    "editor.defaultFormatter": "matklad.rust-analyzer",
+    "editor.defaultFormatter": "rust-lang.rust-analyzer",
     "editor.formatOnSave": true,
   },
   "deno.enable": true,
