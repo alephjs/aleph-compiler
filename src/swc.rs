@@ -286,7 +286,7 @@ impl SWC {
         let mut deps: Vec<DependencyDescriptor> = Vec::new();
         let a = code.split("\"").collect::<Vec<&str>>();
         for dep in resolver.deps.clone() {
-          if a.contains(&dep.import_url.as_str()) {
+          if dep.specifier.ends_with("/jsx-runtime") || a.contains(&dep.import_url.as_str()) {
             deps.push(dep);
           }
         }

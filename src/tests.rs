@@ -193,6 +193,9 @@ fn strip_data_export() {
       export function log(msg: string) {
         console.log(msg)
       }
+      export default function App() {
+        return <div>Hello world!</div>
+      }
     "#;
   let (code, r) = transform(
     "./app.tsx",
@@ -200,6 +203,7 @@ fn strip_data_export() {
     false,
     &EmitOptions {
       strip_data_export: true,
+      jsx_import_source: Some("https://esm.sh/react@18".to_owned()),
       ..Default::default()
     },
   );
@@ -212,7 +216,7 @@ fn strip_data_export() {
   assert!(code.contains("export function log(msg) {"));
   assert!(!code.contains("import { json } from \"./helper.ts\""));
   assert!(!code.contains("const count = 0"));
-  assert_eq!(r.borrow().deps.len(), 0);
+  assert_eq!(r.borrow().deps.len(), 1);
 }
 
 #[test]
