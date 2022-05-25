@@ -122,9 +122,10 @@ function takeObject(idx) {
 /**
  * @param {string} specifier
  * @param {string} code
+ * @param {any} options
  * @returns {any}
  */
-export function parseExportNames(specifier, code) {
+export function parseExportNames(specifier, code, options) {
   try {
     const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
     const ptr0 = passStringToWasm0(
@@ -139,7 +140,14 @@ export function parseExportNames(specifier, code) {
       wasm.__wbindgen_realloc,
     );
     const len1 = WASM_VECTOR_LEN;
-    wasm.parseExportNames(retptr, ptr0, len0, ptr1, len1);
+    wasm.parseExportNames(
+      retptr,
+      ptr0,
+      len0,
+      ptr1,
+      len1,
+      addHeapObject(options),
+    );
     var r0 = getInt32Memory0()[retptr / 4 + 0];
     var r1 = getInt32Memory0()[retptr / 4 + 1];
     var r2 = getInt32Memory0()[retptr / 4 + 2];
