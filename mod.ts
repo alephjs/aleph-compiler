@@ -66,9 +66,10 @@ async function initWasm() {
 export async function parseExportNames(
   specifier: string,
   code: string,
+  options: Pick<TransformOptions, "lang"> = {},
 ): Promise<string[]> {
   await checkWasmReady();
-  return parseExportNamesWasmFn(specifier, code);
+  return parseExportNamesWasmFn(specifier, code, options);
 }
 
 /** Parse the deps of the modules. */

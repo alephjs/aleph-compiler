@@ -80,10 +80,14 @@ pub struct TransformOutput {
 }
 
 #[wasm_bindgen(js_name = "parseExportNames")]
-pub fn parse_export_names(specifier: &str, code: &str) -> Result<JsValue, JsValue> {
+pub fn parse_export_names(specifier: &str, code: &str, options: JsValue) -> Result<JsValue, JsValue> {
   console_error_panic_hook::set_once();
 
-  let module = SWC::parse(specifier, code, EsVersion::Es2022, None).expect("could not parse the module");
+  let options: Options = options
+    .into_serde()
+    .map_err(|err| format!("failed to parse options: {}", err))
+    .unwrap();
+  let module = SWC::parse(specifier, code, EsVersion::Es2022, options.lang).expect("could not parse the module");
   let names = module.parse_export_names().expect("could not parse the module");
 
   Ok(JsValue::from_serde(&names).unwrap())
