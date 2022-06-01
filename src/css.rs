@@ -37,8 +37,6 @@ pub struct TransformResult {
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Config {
-  pub filename: String,
-  pub code: String,
   pub targets: Option<Browsers>,
   pub minify: Option<bool>,
   pub source_map: Option<bool>,
@@ -62,20 +60,6 @@ pub struct CssModulesConfig {
   pattern: Option<String>,
   #[serde(default)]
   dashed_idents: bool,
-}
-
-#[derive(Debug, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct BundleConfig {
-  pub filename: String,
-  pub targets: Option<Browsers>,
-  pub minify: Option<bool>,
-  pub source_map: Option<bool>,
-  pub drafts: Option<Drafts>,
-  pub css_modules: Option<CssModulesOption>,
-  pub analyze_dependencies: Option<bool>,
-  pub pseudo_classes: Option<OwnedPseudoClasses>,
-  pub unused_symbols: Option<HashSet<String>>,
 }
 
 #[derive(Debug, Deserialize)]
