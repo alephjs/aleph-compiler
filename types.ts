@@ -56,7 +56,7 @@ export interface TransformCSSOptions {
   /** Whether to enable various draft syntax. */
   drafts?: Drafts;
   /** Whether to compile this file as a CSS module. */
-  cssModules?: boolean;
+  cssModules?: boolean | CSSModulesConfig;
   /**
    * Whether to analyze dependencies (e.g. `@import` and `url()`).
    * When enabled, `@import` rules are removed, and `url()` dependencies
@@ -101,6 +101,13 @@ export interface TransformCSSResult {
   readonly exports?: CSSModuleExports;
   /** `@import` and `url()` dependencies, if enabled. */
   readonly dependencies?: Dependency[];
+}
+
+export interface CSSModulesConfig {
+  /** The pattern to use when renaming class names and other identifiers. Default is `[hash]_[local]`. */
+  pattern: string;
+  /** Whether to rename dashed identifiers, e.g. custom properties. */
+  dashedIdents: boolean;
 }
 
 export type CSSModuleExports = {

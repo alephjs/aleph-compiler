@@ -37,11 +37,42 @@ pub struct TransformResult {
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Config {
+  pub filename: String,
+  pub code: String,
   pub targets: Option<Browsers>,
   pub minify: Option<bool>,
   pub source_map: Option<bool>,
   pub drafts: Option<Drafts>,
-  pub css_modules: Option<bool>,
+  pub css_modules: Option<CssModulesOption>,
+  pub analyze_dependencies: Option<bool>,
+  pub pseudo_classes: Option<OwnedPseudoClasses>,
+  pub unused_symbols: Option<HashSet<String>>,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(untagged)]
+pub enum CssModulesOption {
+  Bool(bool),
+  Config(CssModulesConfig),
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CssModulesConfig {
+  pattern: Option<String>,
+  #[serde(default)]
+  dashed_idents: bool,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct BundleConfig {
+  pub filename: String,
+  pub targets: Option<Browsers>,
+  pub minify: Option<bool>,
+  pub source_map: Option<bool>,
+  pub drafts: Option<Drafts>,
+  pub css_modules: Option<CssModulesOption>,
   pub analyze_dependencies: Option<bool>,
   pub pseudo_classes: Option<OwnedPseudoClasses>,
   pub unused_symbols: Option<HashSet<String>>,
@@ -86,7 +117,20 @@ pub fn compile<'i>(filename: String, code: &'i str, config: &Config) -> Result<T
     ParserOptions {
       nesting: matches!(drafts, Some(d) if d.nesting),
       custom_media: matches!(drafts, Some(d) if d.custom_media),
-      css_modules: config.css_modules.unwrap_or(false),
+      css_modules: if let Some(css_modules) = &config.css_modules {
+        match css_modules {
+          CssModulesOption::Bool(true) => Some(parcel_css::css_modules::Config::default()),
+          CssModulesOption::Bool(false) => None,
+          CssModulesOption::Config(c) => Some(parcel_css::css_modules::Config {
+            pattern: c.pattern.as_ref().map_or(Default::default(), |pattern| {
+              parcel_css::css_modules::Pattern::parse(pattern).unwrap()
+            }),
+            dashed_idents: c.dashed_idents,
+          }),
+        }
+      } else {
+        None
+      },
       source_index: 0,
     },
   )?;
