@@ -20,7 +20,7 @@ impl VisitMut for MinifierPass {
   fn visit_mut_module(&mut self, m: &mut Module) {
     m.map_with_mut(|m| {
       optimize(
-        m,
+        m.into(),
         self.cm.clone(),
         self.comments.as_ref().map(|v| v as &dyn Comments),
         None,
@@ -37,6 +37,7 @@ impl VisitMut for MinifierPass {
           top_level_mark: self.top_level_mark,
         },
       )
+      .expect_module()
     })
   }
 }
