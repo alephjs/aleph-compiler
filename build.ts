@@ -1,7 +1,7 @@
-import { dim } from "https://deno.land/std@0.136.0/fmt/colors.ts";
-import { encode } from "https://deno.land/std@0.136.0/encoding/base64.ts";
-import { ensureDir } from "https://deno.land/std@0.136.0/fs/ensure_dir.ts";
-import { dirname } from "https://deno.land/std@0.136.0/path/mod.ts";
+import { dim } from "https://deno.land/std@0.144.0/fmt/colors.ts";
+import { encode } from "https://deno.land/std@0.144.0/encoding/base64.ts";
+import { ensureDir } from "https://deno.land/std@0.144.0/fs/ensure_dir.ts";
+import { dirname } from "https://deno.land/std@0.144.0/path/mod.ts";
 import { compress } from "https://deno.land/x/lz4@v0.1.2/mod.ts";
 
 async function run(cmd: string[]) {
@@ -37,25 +37,24 @@ if (import.meta.main) {
     );
     await Deno.writeTextFile(
       "./dist/compiler.js",
-      "import { red } from 'https://deno.land/std@0.136.0/fmt/colors.ts';" +
-        jsCode
-          .replace(`import * as __wbg_star0 from 'env';`, "")
-          .replace(
-            `imports['env'] = __wbg_star0;`,
-            `imports['env'] = { now: () => Date.now() };`,
-          )
-          .replace(
-            "console.error(getStringFromWasm0(arg0, arg1));",
-            `
-              const msg = getStringFromWasm0(arg0, arg1);
-              if (msg.includes('DiagnosticBuffer(["')) {
-                const diagnostic = msg.split('DiagnosticBuffer(["')[1].split('"])')[0]
-                throw new Error(diagnostic);
-              } else {
-                throw new Error(msg);
-              }
-            `,
-          ),
+      jsCode
+        .replace(`import * as __wbg_star0 from 'env';`, "")
+        .replace(
+          `imports['env'] = __wbg_star0;`,
+          `imports['env'] = { now: () => Date.now() };`,
+        )
+        .replace(
+          "console.error(getStringFromWasm0(arg0, arg1));",
+          `
+            const msg = getStringFromWasm0(arg0, arg1);
+            if (msg.includes('DiagnosticBuffer(["')) {
+              const diagnostic = msg.split('DiagnosticBuffer(["')[1].split('"])')[0]
+              throw new Error(diagnostic);
+            } else {
+              throw new Error(msg);
+            }
+          `,
+        ),
     );
     await run(["deno", "fmt", "-q", "./dist/compiler.js"]);
     const wasmSize = (await Deno.stat("./dist/wasm.js")).size;

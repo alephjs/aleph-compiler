@@ -1,5 +1,5 @@
-import { ensureDir } from "https://deno.land/std@0.136.0/fs/ensure_dir.ts";
-import { dirname, join } from "https://deno.land/std@0.136.0/path/mod.ts";
+import { ensureDir } from "https://deno.land/std@0.144.0/fs/ensure_dir.ts";
+import { dirname, join } from "https://deno.land/std@0.144.0/path/mod.ts";
 import { VERSION } from "./version.ts";
 import init, {
   parseDeps as parseDepsWasmFn,

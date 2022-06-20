@@ -1,4 +1,3 @@
-import { red } from "https://deno.land/std@0.136.0/fmt/colors.ts";
 let wasm;
 
 const cachedTextDecoder = new TextDecoder("utf-8", {
