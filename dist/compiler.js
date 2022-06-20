@@ -8,15 +8,12 @@ const cachedTextDecoder = new TextDecoder("utf-8", {
 
 cachedTextDecoder.decode();
 
-let cachegetUint8Memory0 = null;
+let cachedUint8Memory0;
 function getUint8Memory0() {
-  if (
-    cachegetUint8Memory0 === null ||
-    cachegetUint8Memory0.buffer !== wasm.memory.buffer
-  ) {
-    cachegetUint8Memory0 = new Uint8Array(wasm.memory.buffer);
+  if (cachedUint8Memory0.byteLength === 0) {
+    cachedUint8Memory0 = new Uint8Array(wasm.memory.buffer);
   }
-  return cachegetUint8Memory0;
+  return cachedUint8Memory0;
 }
 
 function getStringFromWasm0(ptr, len) {
@@ -97,15 +94,12 @@ function passStringToWasm0(arg, malloc, realloc) {
   return ptr;
 }
 
-let cachegetInt32Memory0 = null;
+let cachedInt32Memory0;
 function getInt32Memory0() {
-  if (
-    cachegetInt32Memory0 === null ||
-    cachegetInt32Memory0.buffer !== wasm.memory.buffer
-  ) {
-    cachegetInt32Memory0 = new Int32Array(wasm.memory.buffer);
+  if (cachedInt32Memory0.byteLength === 0) {
+    cachedInt32Memory0 = new Int32Array(wasm.memory.buffer);
   }
-  return cachegetInt32Memory0;
+  return cachedInt32Memory0;
 }
 
 function dropObject(idx) {
@@ -299,10 +293,7 @@ async function load(module, imports) {
   }
 }
 
-async function init(input) {
-  if (typeof input === "undefined") {
-    input = new URL("aleph_compiler_bg.wasm", import.meta.url);
-  }
+function getImports() {
   const imports = {};
   imports.wbg = {};
   imports.wbg.__wbindgen_json_parse = function (arg0, arg1) {
@@ -352,13 +343,45 @@ async function init(input) {
       wasm.__wbindgen_free(arg0, arg1);
     }
   };
-  imports.wbg.__wbg_new_3047bf4b4f02b802 = function (arg0, arg1) {
+  imports.wbg.__wbg_new_651776e932b7e9c7 = function (arg0, arg1) {
     const ret = new Error(getStringFromWasm0(arg0, arg1));
     return addHeapObject(ret);
   };
   imports.wbg.__wbindgen_throw = function (arg0, arg1) {
     throw new Error(getStringFromWasm0(arg0, arg1));
   };
+
+  return imports;
+}
+
+function initMemory(imports, maybe_memory) {
+}
+
+function finalizeInit(instance, module) {
+  wasm = instance.exports;
+  init.__wbindgen_wasm_module = module;
+  cachedInt32Memory0 = new Int32Array(wasm.memory.buffer);
+  cachedUint8Memory0 = new Uint8Array(wasm.memory.buffer);
+
+  return wasm;
+}
+
+function initSync(bytes) {
+  const imports = getImports();
+
+  initMemory(imports);
+
+  const module = new WebAssembly.Module(bytes);
+  const instance = new WebAssembly.Instance(module, imports);
+
+  return finalizeInit(instance, module);
+}
+
+async function init(input) {
+  if (typeof input === "undefined") {
+    input = new URL("aleph_compiler_bg.wasm", import.meta.url);
+  }
+  const imports = getImports();
 
   if (
     typeof input === "string" ||
@@ -368,12 +391,12 @@ async function init(input) {
     input = fetch(input);
   }
 
+  initMemory(imports);
+
   const { instance, module } = await load(await input, imports);
 
-  wasm = instance.exports;
-  init.__wbindgen_wasm_module = module;
-
-  return wasm;
+  return finalizeInit(instance, module);
 }
 
+export { initSync };
 export default init;
