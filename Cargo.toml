@@ -11,9 +11,9 @@ edition = "2021"
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]
-anyhow = "1.0.57"
+anyhow = "1.0.58"
 base64 = "0.13.0"
-import_map = "0.9.0"
+import_map = "0.11.0"
 lazy_static = "1.4.0"
 path-slash = "0.1.4"
 pathdiff = "0.2.1"
@@ -24,23 +24,23 @@ url = "2.2.2"
 
 # parcel css
 cssparser = "0.29.6"
-parcel_css = "1.0.0-alpha.26"
+parcel_css = "1.0.0-alpha.27"
 parcel_sourcemap = "2.0.5"
 
 # swc
 # docs: https://swc.rs
 # crate: https://crates.io/search?q=swc_ecmascript
-swc_atoms = "0.2.11"
-swc_common = { version = "0.18.7", features = ["sourcemap"] }
-swc_ecmascript = { version = "0.159.0", features = ["codegen", "parser", "utils", "visit"] }
-swc_ecma_transforms = { version = "0.156.0", features = ["proposal", "typescript", "react", "compat", "optimization" ] }
-swc_ecma_minifier = "0.116.4"
+swc_atoms = "0.2.12"
+swc_common = { version = "0.18.9", features = ["sourcemap"] }
+swc_ecmascript = { version = "0.164.0", features = ["codegen", "parser", "utils", "visit"] }
+swc_ecma_transforms = { version = "0.160.0", features = ["proposal", "typescript", "react", "compat", "optimization" ] }
+swc_ecma_minifier = "0.121.0"
 
 # wasm-bindgen
 # docs: https://rustwasm.github.io/docs/wasm-bindgen
-wasm-bindgen = {version = "0.2.80", features = ["serde-serialize"] }
+wasm-bindgen = {version = "0.2.81", features = ["serde-serialize"] }
 console_error_panic_hook = { version = "0.1.7", optional = true }
-js-sys = "0.3.57"
+js-sys = "0.3.58"
 
 [features]
 default = ["console_error_panic_hook"]
