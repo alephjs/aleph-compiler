@@ -28,10 +28,10 @@ struct SourceMapJson<'a> {
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct TransformResult {
-  code: String,
-  map: Option<String>,
-  exports: Option<CssModuleExports>,
-  dependencies: Option<Vec<Dependency>>,
+  pub code: String,
+  pub map: Option<String>,
+  pub exports: Option<CssModuleExports>,
+  pub dependencies: Option<Vec<Dependency>>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -88,9 +88,9 @@ impl<'a> Into<PseudoClasses<'a>> for &'a OwnedPseudoClasses {
 #[serde(rename_all = "camelCase")]
 pub struct Drafts {
   #[serde(default)]
-  nesting: bool,
+  pub nesting: bool,
   #[serde(default)]
-  custom_media: bool,
+  pub custom_media: bool,
 }
 
 pub fn compile<'i>(filename: String, code: &'i str, config: &Config) -> Result<TransformResult, CompileError<'i>> {
@@ -186,6 +186,7 @@ struct AttrResult {
   dependencies: Option<Vec<Dependency>>,
 }
 
+#[derive(Debug)]
 pub enum CompileError<'i> {
   ParseError(Error<ParserError<'i>>),
   MinifyError(Error<MinifyErrorKind>),

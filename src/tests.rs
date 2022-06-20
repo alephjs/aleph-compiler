@@ -1,4 +1,5 @@
 use super::*;
+use parcel_css::targets::Browsers;
 use regex::Regex;
 use std::collections::HashMap;
 
@@ -70,6 +71,53 @@ fn typescript() {
   let (code, _) = transform("mod.ts", source, false, &EmitOptions::default());
   assert!(code.contains("var D;"));
   assert!(Regex::new(r"\[\s*enumerable\(false\)\s*\]").unwrap().is_match(&code));
+}
+
+#[test]
+fn parcel_css() {
+  let source = r#"
+    @custom-media --modern (color), (hover);
+
+    .foo {
+      background: yellow;
+
+      -webkit-border-radius: 2px;
+      -moz-border-radius: 2px;
+      border-radius: 2px;
+
+      -webkit-transition: background 200ms;
+      -moz-transition: background 200ms;
+      transition: background 200ms;
+
+      &.bar {
+        color: green;
+      }
+    }
+
+    @media (--modern) and (width > 1024px) {
+      .a {
+        color: green;
+      }
+    }
+  "#;
+  let cfg = css::Config {
+    targets: Some(Browsers {
+      chrome: Some(95),
+      ..Browsers::default()
+    }),
+    minify: Some(true),
+    source_map: None,
+    css_modules: None,
+    pseudo_classes: None,
+    unused_symbols: None,
+    analyze_dependencies: None,
+    drafts: Some(css::Drafts {
+      nesting: true,
+      custom_media: true,
+    }),
+  };
+  let res = css::compile("style.css".into(), source, &cfg).unwrap();
+  assert_eq!(res.code, ".foo{background:#ff0;border-radius:2px;transition:background .2s}.foo.bar{color:green}@media ((color) or (hover)) and (min-width:1024px){.a{color:green}}");
 }
 
 #[test]
