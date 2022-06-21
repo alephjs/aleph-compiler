@@ -5,7 +5,7 @@ use crate::minifier::MinifierPass;
 use crate::resolve_fold::resolve_fold;
 use crate::resolver::{DependencyDescriptor, Resolver};
 
-use std::{cell::RefCell, path::Path, rc::Rc};
+use std::{cell::RefCell, path::Path, rc::Rc, sync::Arc};
 use swc_common::comments::SingleThreadedComments;
 use swc_common::errors::{Handler, HandlerFlags};
 use swc_common::{chain, FileName, Globals, Mark, SourceMap};
@@ -47,7 +47,7 @@ impl Default for EmitOptions {
 pub struct SWC {
   pub specifier: String,
   pub module: Module,
-  pub source_map: Rc<SourceMap>,
+  pub source_map: Arc<SourceMap>,
   pub comments: SingleThreadedComments,
 }
 
@@ -83,7 +83,7 @@ impl SWC {
     Ok(SWC {
       specifier: specifier.into(),
       module,
-      source_map: Rc::new(source_map),
+      source_map: Arc::new(source_map),
       comments,
     })
   }

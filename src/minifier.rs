@@ -25,7 +25,7 @@ impl VisitMut for MinifierPass {
         self.comments.as_ref().map(|v| v as &dyn Comments),
         None,
         &MinifyOptions {
-          compress: Some(Default::default()),
+          compress: None, // todo: enable compress
           mangle: Some(MangleOptions {
             top_level: true,
             ..Default::default()
