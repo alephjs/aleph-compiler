@@ -27,7 +27,7 @@ use wasm_bindgen::prelude::{wasm_bindgen, JsValue};
 #[derive(Deserialize)]
 #[serde(deny_unknown_fields, rename_all = "camelCase")]
 pub struct Options {
-  #[serde(default)]
+  #[serde(default = "default_aleph_pkg_uri")]
   pub aleph_pkg_uri: String,
 
   #[serde(default)]
@@ -65,6 +65,10 @@ pub struct Options {
 
 fn default_target() -> String {
   return "es2022".into();
+}
+
+fn default_aleph_pkg_uri() -> String {
+  return "https://deno.land/x/aleph".into();
 }
 
 #[derive(Serialize)]

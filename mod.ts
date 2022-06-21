@@ -91,7 +91,7 @@ export async function parseDeps(
  *   `
  *    import React from 'https://esm.sh/react';
  *
- *    export default App() {
+ *    export default function App() {
  *      return <h1>Hello world!</h1>
  *    }
  *   `
