@@ -31,10 +31,10 @@ parcel_sourcemap = "2.0.5"
 # docs: https://swc.rs
 # crate: https://crates.io/search?q=swc_ecmascript
 swc_atoms = "0.2.12"
-swc_common = { version = "0.18.9", features = ["sourcemap",  "concurrent", "perf"] }
-swc_ecmascript = { version = "0.165.0", features = ["codegen", "parser", "utils", "visit"] }
-swc_ecma_transforms = { version = "0.161.0", features = ["proposal", "typescript", "react", "compat", "optimization" ] }
-swc_ecma_minifier = "0.122.0"
+swc_common = { version = "0.19.1", features = ["sourcemap",  "concurrent", "perf"] }
+swc_ecmascript = { version = "0.169.0", features = ["codegen", "parser", "utils", "visit"] }
+swc_ecma_transforms = { version = "0.165.0", features = ["proposal", "typescript", "react", "compat", "optimization" ] }
+swc_ecma_minifier = "0.126.0"
 
 # wasm-bindgen
 # docs: https://rustwasm.github.io/docs/wasm-bindgen
