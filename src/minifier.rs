@@ -1,3 +1,4 @@
+use serde::Deserialize;
 use swc_common::comments::{Comments, SingleThreadedComments};
 use swc_common::sync::Lrc;
 use swc_common::util::take::Take;
@@ -12,6 +13,13 @@ pub struct MinifierPass {
   pub comments: Option<SingleThreadedComments>,
   pub unresolved_mark: Mark,
   pub top_level_mark: Mark,
+  pub options: MinifierOptions,
+}
+
+#[derive(Deserialize, Debug, Clone, Copy)]
+#[serde(rename_all = "camelCase")]
+pub struct MinifierOptions {
+  pub compress: bool,
 }
 
 impl VisitMut for MinifierPass {
@@ -25,7 +33,11 @@ impl VisitMut for MinifierPass {
         self.comments.as_ref().map(|v| v as &dyn Comments),
         None,
         &MinifyOptions {
-          compress: None, // todo: enable compress
+          compress: if self.options.compress {
+            Some(Default::default())
+          } else {
+            None
+          },
           mangle: Some(MangleOptions {
             top_level: true,
             ..Default::default()

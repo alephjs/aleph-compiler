@@ -1,7 +1,7 @@
 use crate::error::{DiagnosticBuffer, ErrorBuffer};
 use crate::export_names::ExportNamePass;
 use crate::hmr::hmr;
-use crate::minifier::MinifierPass;
+use crate::minifier::{MinifierOptions, MinifierPass};
 use crate::resolve_fold::resolve_fold;
 use crate::resolver::{DependencyDescriptor, Resolver};
 
@@ -27,7 +27,7 @@ pub struct EmitOptions {
   pub target: EsVersion,
   pub jsx_import_source: Option<String>,
   pub strip_data_export: bool,
-  pub minify: bool,
+  pub minify: Option<MinifierOptions>,
   pub source_map: bool,
 }
 
@@ -37,7 +37,7 @@ impl Default for EmitOptions {
       target: EsVersion::Es2022,
       jsx_import_source: None,
       strip_data_export: false,
-      minify: false,
+      minify: None,
       source_map: false,
     }
   }
@@ -273,10 +273,11 @@ impl SWC {
             comments: Some(self.comments.clone()),
             unresolved_mark,
             top_level_mark,
+            options: options.minify.unwrap_or(MinifierOptions { compress: false }),
           }),
-          options.minify
+          options.minify.is_some()
         ),
-        Optional::new(hygiene(), !options.minify),
+        hygiene(),
         fixer(Some(&self.comments)),
       );
 
@@ -335,7 +336,7 @@ impl SWC {
       let mut emitter = swc_ecmascript::codegen::Emitter {
         cfg: swc_ecmascript::codegen::Config {
           target: options.target,
-          minify: options.minify,
+          minify: options.minify.is_some(),
           ascii_only: false,
         },
         comments: Some(&self.comments),

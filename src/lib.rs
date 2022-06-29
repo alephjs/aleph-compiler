@@ -14,6 +14,7 @@ mod swc_helpers;
 #[cfg(test)]
 mod tests;
 
+use minifier::MinifierOptions;
 use resolver::{DependencyDescriptor, Resolver};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
@@ -61,6 +62,12 @@ pub struct Options {
 
   #[serde(default)]
   pub strip_data_export: bool,
+
+  #[serde(default)]
+  pub source_map: bool,
+
+  #[serde(default)]
+  pub minify: Option<MinifierOptions>,
 }
 
 fn default_target() -> String {
@@ -174,8 +181,8 @@ pub fn transform(specifier: &str, code: &str, options: JsValue) -> Result<JsValu
         target,
         strip_data_export: options.strip_data_export,
         jsx_import_source: options.jsx_import_source,
-        minify: !options.is_dev,
-        source_map: options.is_dev,
+        minify: options.minify,
+        source_map: options.source_map,
       },
     )
     .expect("could not transform the module");
