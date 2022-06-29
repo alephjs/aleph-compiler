@@ -104,7 +104,29 @@ export async function transform(
   options: TransformOptions = {},
 ): Promise<TransformResult> {
   await checkWasmReady();
-  return transformWasmFn(specifier, code, options);
+  try {
+    return transformWasmFn(specifier, code, options);
+  } catch (error) {
+    if (
+      options.minify &&
+      (error.stack ?? error.messsage ?? "").includes("ThreadPoolBuildError")
+    ) {
+      // disable minify if ThreadPoolBuildError
+      if (options.minify.compress) {
+        return await transform(specifier, code, {
+          ...options,
+          minify: { compress: false },
+        });
+      } else {
+        return transformWasmFn(specifier, code, {
+          ...options,
+          minify: undefined,
+        });
+      }
+    } else {
+      throw error;
+    }
+  }
 }
 
 /**
