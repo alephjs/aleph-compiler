@@ -4,6 +4,8 @@ export type TransformOptions = {
   graphVersions?: Record<string, string>;
   globalVersion?: string;
   isDev?: boolean;
+  sourceMap?: boolean;
+  minify?: { compress: boolean };
   jsxImportSource?: string;
   jsxRuntime?: "react" | "preact";
   jsxRuntimeCdnVersion?: string;
