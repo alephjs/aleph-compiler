@@ -21,9 +21,6 @@ Deno.test("swc", async (t) => {
           return <h1>Hello world!</h1>
         }
       `,
-      {
-        isDev: true,
-      },
     );
 
     assert(ret.code.includes(`React.createElement("h1"`));
@@ -33,6 +30,7 @@ Deno.test("swc", async (t) => {
     const ret = await transform(
       "./gsi-client.js",
       await Deno.readTextFile("./testdata/gsi-client.js"),
+      { minify: { compress: true } },
     );
 
     assert(ret.code.includes(`this.default_gsi`));
