@@ -30,7 +30,7 @@ const ret = await transform("./app.tsx", code, {
     imports: {
       "react": "https://esm.sh/react@18",
     }
-  }
+  },
   jsxImportSource: "https://esm.sh/react@18",
   isDev: true
 })
