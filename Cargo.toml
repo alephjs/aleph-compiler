@@ -15,11 +15,11 @@ anyhow = "1.0.58"
 base64 = "0.13.0"
 import_map = "0.11.0"
 lazy_static = "1.4.0"
-path-slash = "0.1.4"
+path-slash = "0.1.5"
 pathdiff = "0.2.1"
 regex = "1.5.6"
-serde = { version = "1.0.137", features = ["derive"] }
-serde_json = "1.0.81"
+serde = { version = "1.0.138", features = ["derive"] }
+serde_json = "1.0.82"
 url = "2.2.2"
 
 # parcel css
@@ -30,11 +30,11 @@ parcel_sourcemap = "2.0.5"
 # swc
 # docs: https://swc.rs
 # crate: https://crates.io/search?q=swc_ecmascript
-swc_atoms = "0.2.12"
-swc_common = { version = "0.19.1", features = ["sourcemap",  "concurrent", "perf"] }
-swc_ecmascript = { version = "0.169.0", features = ["codegen", "parser", "utils", "visit"] }
-swc_ecma_transforms = { version = "0.165.0", features = ["proposal", "typescript", "react", "compat", "optimization" ] }
-swc_ecma_minifier = "0.126.0"
+swc_atoms = "0.2.13"
+swc_common = { version = "0.20.1", features = ["sourcemap", "concurrent", "perf"] }
+swc_ecmascript = { version = "0.175.0", features = ["codegen", "parser", "utils", "visit"] }
+swc_ecma_transforms = { version = "0.170.0", features = ["proposal", "typescript", "react", "compat", "optimization" ] }
+swc_ecma_minifier = "0.131.0"
 
 # wasm-bindgen
 # docs: https://rustwasm.github.io/docs/wasm-bindgen
@@ -46,5 +46,13 @@ js-sys = "0.3.58"
 default = ["console_error_panic_hook"]
 
 [profile.release]
-# Tell `rustc` to optimize for speed and size
+# less code to include into binary
+panic = 'abort'
+# optimization over all codebase (better optimization, slower build)
+codegen-units = 1
+# optimization for size (more aggressive)
+opt-level = 'z'
+# optimization for size
+# opt-level = 's'
+# link time optimization using using whole-program analysis
 lto = true
