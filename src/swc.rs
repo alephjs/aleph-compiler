@@ -5,7 +5,7 @@ use crate::minifier::{MinifierOptions, MinifierPass};
 use crate::resolve_fold::resolve_fold;
 use crate::resolver::{DependencyDescriptor, Resolver};
 
-use std::{cell::RefCell, path::Path, rc::Rc, sync::Arc};
+use std::{cell::RefCell, path::Path, rc::Rc};
 use swc_common::comments::SingleThreadedComments;
 use swc_common::errors::{Handler, HandlerFlags};
 use swc_common::{chain, FileName, Globals, Mark, SourceMap};
@@ -47,7 +47,7 @@ impl Default for EmitOptions {
 pub struct SWC {
   pub specifier: String,
   pub module: Module,
-  pub source_map: Arc<SourceMap>,
+  pub source_map: Rc<SourceMap>,
   pub comments: SingleThreadedComments,
 }
 
@@ -83,7 +83,7 @@ impl SWC {
     Ok(SWC {
       specifier: specifier.into(),
       module,
-      source_map: Arc::new(source_map),
+      source_map: Rc::new(source_map),
       comments,
     })
   }
@@ -120,7 +120,6 @@ impl SWC {
         self.specifier.ends_with(".ts") || self.specifier.ends_with(".mts") || self.specifier.ends_with(".tsx");
       let is_jsx = self.specifier.ends_with(".tsx") || self.specifier.ends_with(".jsx");
       let is_dev = resolver.borrow().is_dev;
-      let global_version = resolver.borrow().global_version.clone();
       let react_options = if let Some(jsx_import_source) = &options.jsx_import_source {
         let mut resolver = resolver.borrow_mut();
         let runtime = if is_dev { "/jsx-dev-runtime" } else { "/jsx-runtime" };
@@ -296,23 +295,20 @@ impl SWC {
         resolver.deps = deps;
       }
 
-      if !is_dev {
-        if let Some(global_version) = global_version {
-          let mut has_jsx_runtime = false;
-          let resolver = resolver.borrow();
-          for dep in &resolver.deps {
-            if dep.specifier.ends_with("/jsx-runtime") {
-              has_jsx_runtime = true;
-              break;
-            }
-          }
-          if has_jsx_runtime {
-            code = code.replace(
-              "/jsx-runtime\"",
-              format!("/jsx-runtime?v={}\"", global_version).as_str(),
-            );
-          }
+      // resolve jsx-runtime url
+      let mut jsx_runtime = None;
+      let resolver = resolver.borrow();
+      for dep in &resolver.deps {
+        if dep.specifier.ends_with("/jsx-runtime") {
+          jsx_runtime = Some((dep.specifier.clone(), dep.import_url.clone()));
+          break;
         }
+      }
+      if let Some((jsx_runtime, import_url)) = jsx_runtime {
+        code = code.replace(
+          format!("\"{}\"", jsx_runtime).as_str(),
+          format!("\"{}\"", import_url).as_str(),
+        );
       }
 
       Ok((code, map))

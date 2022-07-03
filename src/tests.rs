@@ -152,6 +152,7 @@ fn import_resolving() {
 #[test]
 fn jsx_automtic() {
   let source = r#"
+      /** @jsxImportSource https://esm.sh/react@18.0.0 */
       export default function App() {
         return (
           <>
