@@ -180,7 +180,7 @@ impl Resolver {
       }
     }
 
-    if self.is_dev && is_esm_sh_url(&fixed_url) {
+    if self.is_dev && is_esm_sh_url(&fixed_url) && !fixed_url.ends_with(".development.js") {
       if fixed_url.contains("?") {
         fixed_url = fixed_url + "&dev"
       } else {
