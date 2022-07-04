@@ -272,7 +272,10 @@ impl SWC {
         let mut deps: Vec<DependencyDescriptor> = Vec::new();
         let a = code.split("\"").collect::<Vec<&str>>();
         for dep in resolver.deps.clone() {
-          if dep.specifier.ends_with("/jsx-runtime") || a.contains(&dep.import_url.as_str()) {
+          if dep.specifier.ends_with("/jsx-runtime")
+            || dep.specifier.ends_with("/jsx-dev-runtime")
+            || a.contains(&dep.import_url.as_str())
+          {
             deps.push(dep);
           }
         }
@@ -283,7 +286,7 @@ impl SWC {
       let mut jsx_runtime = None;
       let resolver = resolver.borrow();
       for dep in &resolver.deps {
-        if dep.specifier.ends_with("/jsx-runtime") {
+        if dep.specifier.ends_with("/jsx-runtime") || dep.specifier.ends_with("/jsx-dev-runtime") {
           jsx_runtime = Some((dep.specifier.clone(), dep.import_url.clone()));
           break;
         }
