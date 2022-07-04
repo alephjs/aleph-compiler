@@ -178,8 +178,8 @@ pub fn transform(specifier: &str, code: &str, options: JsValue) -> Result<JsValu
   )
 }
 
-#[wasm_bindgen(js_name = "transformCSS")]
-pub fn transform_css(filename: &str, code: &str, config_val: JsValue) -> Result<JsValue, JsValue> {
+#[wasm_bindgen(js_name = "parcelCSS")]
+pub fn parcel_css(filename: &str, code: &str, config_val: JsValue) -> Result<JsValue, JsValue> {
   let config: css::Config = config_val
     .into_serde()
     .map_err(|err| format!("failed to parse options: {}", err))
