@@ -1,19 +1,12 @@
 use import_map::ImportMap;
 use path_slash::PathBufExt;
 use pathdiff::diff_paths;
-use regex::Regex;
 use serde::Serialize;
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 use std::str::FromStr;
 use swc_common::Span;
 use url::Url;
-
-lazy_static! {
-  pub static ref RE_REACT_URL: Regex =
-    Regex::new(r"^https?://(esm\.sh|cdn\.esm\.sh)(/v\d+)?/react(\-dom)?(@[^/]+)?(/.*)?$").unwrap();
-  pub static ref RE_PROTOCOL_URL: Regex = Regex::new(r"^(mailto:|[a-z]+://)").unwrap();
-}
 
 #[derive(Clone, Debug, Eq, PartialEq, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -36,27 +29,21 @@ pub struct Resolver {
   pub specifier_is_remote: bool,
   /// a ordered dependencies of the module
   pub deps: Vec<DependencyDescriptor>,
-  /// jsx runtime: react | preact
-  pub jsx_runtime: Option<String>,
   /// development mode
   pub is_dev: bool,
-  /// the deployment id
+  /// the global version
   pub global_version: Option<String>,
+  /// the graph versions
+  pub graph_versions: HashMap<String, String>,
   // internal
   import_map: ImportMap,
   resolve_remote_deps: bool,
-  jsx_runtime_version: Option<String>,
-  jsx_runtime_cdn_version: Option<String>,
-  graph_versions: HashMap<String, String>,
 }
 
 impl Resolver {
   pub fn new(
     specifier: &str,
     aleph_pkg_uri: &str,
-    jsx_runtime: Option<String>,
-    jsx_runtime_version: Option<String>,
-    jsx_runtime_cdn_version: Option<String>,
     import_map: ImportMap,
     graph_versions: HashMap<String, String>,
     global_version: Option<String>,
@@ -68,9 +55,6 @@ impl Resolver {
       specifier: specifier.into(),
       specifier_is_remote: is_http_url(specifier),
       deps: Vec::new(),
-      jsx_runtime,
-      jsx_runtime_version,
-      jsx_runtime_cdn_version,
       import_map,
       graph_versions,
       global_version,
@@ -142,43 +126,6 @@ impl Resolver {
       resolved_url.into()
     };
     let is_remote = is_http_url(&fixed_url);
-
-    // fix react/react-dom url
-    if is_remote && RE_REACT_URL.is_match(fixed_url.as_str()) {
-      if let Some(jsx_runtime_version) = &self.jsx_runtime_version {
-        let caps = RE_REACT_URL.captures(fixed_url.as_str()).unwrap();
-        let host = caps.get(1).map_or("", |m| m.as_str());
-        let build_version = caps.get(2).map_or("", |m| m.as_str().strip_prefix("/v").unwrap());
-        let dom = caps.get(3).map_or("", |m| m.as_str());
-        let ver = caps.get(4).map_or("", |m| m.as_str());
-        let path = caps.get(5).map_or("", |m| m.as_str());
-        let target_build_version = if let Some(jsx_runtime_cdn_version) = &self.jsx_runtime_cdn_version {
-          if build_version != "" && !build_version.eq(jsx_runtime_cdn_version) {
-            Some(jsx_runtime_cdn_version.clone())
-          } else {
-            None
-          }
-        } else {
-          None
-        };
-        if ver != jsx_runtime_version || target_build_version.is_some() {
-          if let Some(target_build_version) = target_build_version {
-            fixed_url = format!(
-              "https://{}/v{}/react{}@{}{}",
-              host, target_build_version, dom, jsx_runtime_version, path
-            );
-          } else if build_version != "" {
-            fixed_url = format!(
-              "https://{}/v{}/react{}@{}{}",
-              host, build_version, dom, jsx_runtime_version, path
-            );
-          } else {
-            fixed_url = format!("https://{}/react{}@{}{}", host, dom, jsx_runtime_version, path);
-          }
-          import_url = fixed_url.clone();
-        }
-      }
-    }
 
     if self.is_dev && is_esm_sh_url(&fixed_url) && !fixed_url.ends_with(".development.js") {
       if fixed_url.contains("?") {

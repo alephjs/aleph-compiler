@@ -1,9 +1,5 @@
-#[macro_use]
-extern crate lazy_static;
-
 mod css;
 mod error;
-mod export_names;
 mod hmr;
 mod minifier;
 mod resolve_fold;
@@ -41,24 +37,25 @@ pub struct Options {
   pub import_map: Option<String>,
 
   #[serde(default)]
-  pub graph_versions: HashMap<String, String>,
+  pub global_version: Option<String>,
 
   #[serde(default)]
-  pub global_version: Option<String>,
+  pub graph_versions: HashMap<String, String>,
 
   #[serde(default = "default_target")]
   pub target: String,
 
-  pub jsx_runtime: Option<String>,
+  #[serde(default)]
+  pub jsx_pragma: Option<String>,
 
   #[serde(default)]
-  pub jsx_runtime_version: Option<String>,
-
-  #[serde(default)]
-  pub jsx_runtime_cdn_version: Option<String>,
+  pub jsx_pragma_frag: Option<String>,
 
   #[serde(default)]
   pub jsx_import_source: Option<String>,
+
+  #[serde(default)]
+  pub react_refresh: bool,
 
   #[serde(default)]
   pub strip_data_export: bool,
@@ -90,20 +87,6 @@ pub struct TransformOutput {
   pub map: Option<String>,
 }
 
-#[wasm_bindgen(js_name = "parseExportNames")]
-pub fn parse_export_names(specifier: &str, code: &str, options: JsValue) -> Result<JsValue, JsValue> {
-  console_error_panic_hook::set_once();
-
-  let options: Options = options
-    .into_serde()
-    .map_err(|err| format!("failed to parse options: {}", err))
-    .unwrap();
-  let module = SWC::parse(specifier, code, EsVersion::Es2022, options.lang).expect("could not parse the module");
-  let names = module.parse_export_names().expect("could not parse the module");
-
-  Ok(JsValue::from_serde(&names).unwrap())
-}
-
 #[wasm_bindgen(js_name = "parseDeps")]
 pub fn parse_deps(specifier: &str, code: &str, options: JsValue) -> Result<JsValue, JsValue> {
   console_error_panic_hook::set_once();
@@ -121,9 +104,6 @@ pub fn parse_deps(specifier: &str, code: &str, options: JsValue) -> Result<JsVal
   let resolver = Rc::new(RefCell::new(Resolver::new(
     specifier,
     "",
-    None,
-    None,
-    None,
     importmap,
     HashMap::new(),
     None,
@@ -153,9 +133,6 @@ pub fn transform(specifier: &str, code: &str, options: JsValue) -> Result<JsValu
   let resolver = Rc::new(RefCell::new(Resolver::new(
     specifier,
     &options.aleph_pkg_uri,
-    options.jsx_runtime,
-    options.jsx_runtime_version,
-    options.jsx_runtime_cdn_version,
     importmap,
     options.graph_versions,
     options.global_version,
@@ -179,8 +156,11 @@ pub fn transform(specifier: &str, code: &str, options: JsValue) -> Result<JsValu
       resolver.clone(),
       &EmitOptions {
         target,
-        strip_data_export: options.strip_data_export,
+        jsx_pragma: options.jsx_pragma,
+        jsx_pragma_frag: options.jsx_pragma_frag,
         jsx_import_source: options.jsx_import_source,
+        react_refresh: options.react_refresh,
+        strip_data_export: options.strip_data_export,
         minify: options.minify,
         source_map: options.source_map,
       },

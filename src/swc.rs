@@ -1,5 +1,4 @@
 use crate::error::{DiagnosticBuffer, ErrorBuffer};
-use crate::export_names::ExportNamePass;
 use crate::hmr::hmr;
 use crate::minifier::{MinifierOptions, MinifierPass};
 use crate::resolve_fold::resolve_fold;
@@ -25,7 +24,10 @@ use swc_ecmascript::visit::{as_folder, Fold, FoldWith};
 #[derive(Debug, Clone)]
 pub struct EmitOptions {
   pub target: EsVersion,
+  pub jsx_pragma: Option<String>,
+  pub jsx_pragma_frag: Option<String>,
   pub jsx_import_source: Option<String>,
+  pub react_refresh: bool,
   pub strip_data_export: bool,
   pub minify: Option<MinifierOptions>,
   pub source_map: bool,
@@ -35,7 +37,10 @@ impl Default for EmitOptions {
   fn default() -> Self {
     EmitOptions {
       target: EsVersion::Es2022,
+      jsx_pragma: None,
+      jsx_pragma_frag: None,
       jsx_import_source: None,
+      react_refresh: false,
       strip_data_export: false,
       minify: None,
       source_map: false,
@@ -88,14 +93,6 @@ impl SWC {
     })
   }
 
-  /// parse export names in the module.
-  pub fn parse_export_names(&self) -> Result<Vec<String>, anyhow::Error> {
-    let program = Program::Module(self.module.clone());
-    let mut parser = ExportNamePass { names: vec![] };
-    program.fold_with(&mut parser);
-    Ok(parser.names)
-  }
-
   /// parse deps in the module.
   pub fn parse_deps(&self, resolver: Rc<RefCell<Resolver>>) -> Result<Vec<DependencyDescriptor>, anyhow::Error> {
     let program = Program::Module(self.module.clone());
@@ -114,12 +111,11 @@ impl SWC {
     swc_common::GLOBALS.set(&Globals::new(), || {
       let unresolved_mark = Mark::new();
       let top_level_mark = Mark::fresh(Mark::root());
-      let jsx_runtime = resolver.borrow().jsx_runtime.clone();
       let specifier_is_remote = resolver.borrow().specifier_is_remote;
+      let is_dev = resolver.borrow().is_dev;
       let is_ts =
         self.specifier.ends_with(".ts") || self.specifier.ends_with(".mts") || self.specifier.ends_with(".tsx");
       let is_jsx = self.specifier.ends_with(".tsx") || self.specifier.ends_with(".jsx");
-      let is_dev = resolver.borrow().is_dev;
       let react_options = if let Some(jsx_import_source) = &options.jsx_import_source {
         let mut resolver = resolver.borrow_mut();
         let runtime = if is_dev { "/jsx-dev-runtime" } else { "/jsx-runtime" };
@@ -140,23 +136,11 @@ impl SWC {
           ..Default::default()
         }
       } else {
-        if let Some(jsx_runtime) = &jsx_runtime {
-          match jsx_runtime.as_str() {
-            "preact" => react::Options {
-              pragma: Some("h".into()),
-              pragma_frag: Some("Fragment".into()),
-              ..Default::default()
-            },
-            _ => react::Options { ..Default::default() },
-          }
-        } else {
-          react::Options { ..Default::default() }
+        react::Options {
+          pragma: options.jsx_pragma.clone(),
+          pragma_frag: options.jsx_pragma_frag.clone(),
+          ..Default::default()
         }
-      };
-      let is_react = if let Some(jsx_runtime) = &jsx_runtime {
-        jsx_runtime.eq("react")
-      } else {
-        false
       };
       let assumptions = Assumptions::all();
       let passes = chain!(
@@ -249,7 +233,7 @@ impl SWC {
             Some(&self.comments),
             top_level_mark
           ),
-          !specifier_is_remote && is_react
+          options.react_refresh && !specifier_is_remote
         ),
         Optional::new(
           react::jsx(

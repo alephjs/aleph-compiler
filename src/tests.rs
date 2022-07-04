@@ -9,7 +9,7 @@ fn transform(specifer: &str, source: &str, is_dev: bool, options: &EmitOptions) 
     r#"{
       "imports": {
         "~/": "./",
-        "react": "https://esm.sh/react"
+        "react": "https://esm.sh/react@18"
       }
     }"#,
   )
@@ -22,9 +22,6 @@ fn transform(specifer: &str, source: &str, is_dev: bool, options: &EmitOptions) 
   let resolver = Rc::new(RefCell::new(Resolver::new(
     specifer,
     "https://deno.land/x/aleph",
-    Some("react".into()),
-    Some("18.0.0".into()),
-    Some("80".into()),
     importmap,
     graph_versions,
     Some("1.0.0".into()),
@@ -124,7 +121,6 @@ fn parcel_css() {
 fn import_resolving() {
   let source = r#"
       import React from "react"
-      import React from "https://esm.sh/v75/react-dom@16.0.4/es2020/react-dom.js"
       import { foo } from "~/foo.ts"
       import Layout from "./Layout.tsx"
       import "https://esm.sh/@fullcalendar/daygrid?css&dev"
@@ -139,8 +135,7 @@ fn import_resolving() {
       }, 1000)
     "#;
   let (code, _) = transform("./pages/blog/$id.tsx", source, false, &EmitOptions::default());
-  assert!(code.contains("\"/-/esm.sh/react@18.0.0?v=1.0.0\""));
-  assert!(code.contains("\"/-/esm.sh/v80/react-dom@18.0.0/es2020/react-dom.js?v=1.0.0\""));
+  assert!(code.contains("\"/-/esm.sh/react@18?v=1.0.0\""));
   assert!(code.contains("\"../../foo.ts?v=100\""));
   assert!(code.contains("\"./Layout.tsx?v=1.0.0\""));
   assert!(code.contains("\"/-/esm.sh/@fullcalendar/daygrid?css&dev&module&v=1.0.0\""));
@@ -152,7 +147,7 @@ fn import_resolving() {
 #[test]
 fn jsx_automtic() {
   let source = r#"
-      /** @jsxImportSource https://esm.sh/react@18.0.0 */
+      /** @jsxImportSource https://esm.sh/react@18 */
       export default function App() {
         return (
           <>
@@ -171,19 +166,19 @@ fn jsx_automtic() {
     },
   );
   assert!(
-    code.contains("import { jsx as _jsx, Fragment as _Fragment } from \"/-/esm.sh/react@18.0.0/jsx-runtime?v=1.0.0\"")
+    code.contains("import { jsx as _jsx, Fragment as _Fragment } from \"/-/esm.sh/react@18/jsx-runtime?v=1.0.0\"")
   );
   assert!(code.contains("_jsx(_Fragment, {"));
   assert!(code.contains("_jsx(\"h1\", {"));
   assert!(code.contains("children: \"Hello world!\""));
   assert_eq!(
     resolver.borrow().deps.get(0).unwrap().specifier,
-    "https://esm.sh/react@18.0.0/jsx-runtime"
+    "https://esm.sh/react@18/jsx-runtime"
   );
 }
 
 #[test]
-fn react_dev() {
+fn react_refresh() {
   let source = r#"
       import { useState } from "react"
       export default function App() {
@@ -193,7 +188,16 @@ fn react_dev() {
         )
       }
     "#;
-  let (code, _) = transform("./app.tsx", source, true, &EmitOptions::default());
+  let (code, _) = transform(
+    "./app.tsx",
+    source,
+    true,
+    &EmitOptions {
+      react_refresh: true,
+      jsx_import_source: Some("https://esm.sh/react@18".to_owned()),
+      ..Default::default()
+    },
+  );
   assert!(code.contains(
     "import { __REACT_REFRESH_RUNTIME__, __REACT_REFRESH__ } from \"/-/deno.land/x/aleph/framework/react/refresh.ts\""
   ));
@@ -267,55 +271,4 @@ fn strip_data_export() {
   assert!(!code.contains("import { json } from \"./helper.ts\""));
   assert!(!code.contains("const count = 0"));
   assert_eq!(r.borrow().deps.len(), 1);
-}
-
-#[test]
-fn parse_export_names() {
-  let source = r#"
-    export const name = "alephjs"
-    export const version = "1.0.1"
-    const start = () => {}
-    export default start
-    export const { build } = { build: () => {} }
-    export function dev() {}
-    export class Server {}
-    export const { a: { a1, a2 }, 'b': [ b1, b2 ], c, ...rest } = { a: { a1: 0, a2: 0 }, b: [ 0, 0 ], c: 0, d: 0 }
-    export const [ d, e, ...{f, g, rest3} ] = [0, 0, {f:0,g:0,h:0}]
-    let i
-    export const j = i = [0, 0]
-    export { exists, existsSync } from "https://deno.land/std/fs/exists.ts"
-    export * as DenoStdServer from "https://deno.land/std/http/sever.ts"
-    export * from "https://deno.land/std/http/sever.ts"
-  "#;
-  let module = SWC::parse("/app.ts", source, EsVersion::Es2022, None).expect("could not parse module");
-  assert_eq!(
-    module.parse_export_names().unwrap(),
-    vec![
-      "name",
-      "version",
-      "default",
-      "build",
-      "dev",
-      "Server",
-      "a1",
-      "a2",
-      "b1",
-      "b2",
-      "c",
-      "rest",
-      "d",
-      "e",
-      "f",
-      "g",
-      "rest3",
-      "j",
-      "exists",
-      "existsSync",
-      "DenoStdServer",
-      "{https://deno.land/std/http/sever.ts}",
-    ]
-    .into_iter()
-    .map(|s| s.to_owned())
-    .collect::<Vec<String>>()
-  )
 }

@@ -1,17 +1,17 @@
 export type TransformOptions = {
+  lang?: "ts" | "tsx" | "js" | "jsx";
   alephPkgUri?: string;
   importMap?: string;
-  graphVersions?: Record<string, string>;
   globalVersion?: string;
+  graphVersions?: Record<string, string>;
   isDev?: boolean;
   sourceMap?: boolean;
-  minify?: { compress: boolean };
+  jsxPragma?: string;
+  jsxPragmaFrag?: string;
   jsxImportSource?: string;
-  jsxRuntime?: "react" | "preact";
-  jsxRuntimeCdnVersion?: string;
-  jsxRuntimeVersion?: string;
-  lang?: "ts" | "tsx" | "js" | "jsx";
+  reactRefresh?: boolean;
   stripDataExport?: boolean;
+  minify?: { compress: boolean };
   target?:
     | "es2015"
     | "es2016"
