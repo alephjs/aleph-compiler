@@ -118,47 +118,6 @@ function takeObject(idx) {
  * @param {any} options
  * @returns {any}
  */
-export function parseExportNames(specifier, code, options) {
-  try {
-    const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
-    const ptr0 = passStringToWasm0(
-      specifier,
-      wasm.__wbindgen_malloc,
-      wasm.__wbindgen_realloc,
-    );
-    const len0 = WASM_VECTOR_LEN;
-    const ptr1 = passStringToWasm0(
-      code,
-      wasm.__wbindgen_malloc,
-      wasm.__wbindgen_realloc,
-    );
-    const len1 = WASM_VECTOR_LEN;
-    wasm.parseExportNames(
-      retptr,
-      ptr0,
-      len0,
-      ptr1,
-      len1,
-      addHeapObject(options),
-    );
-    var r0 = getInt32Memory0()[retptr / 4 + 0];
-    var r1 = getInt32Memory0()[retptr / 4 + 1];
-    var r2 = getInt32Memory0()[retptr / 4 + 2];
-    if (r2) {
-      throw takeObject(r1);
-    }
-    return takeObject(r0);
-  } finally {
-    wasm.__wbindgen_add_to_stack_pointer(16);
-  }
-}
-
-/**
- * @param {string} specifier
- * @param {string} code
- * @param {any} options
- * @returns {any}
- */
 export function parseDeps(specifier, code, options) {
   try {
     const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
@@ -227,7 +186,7 @@ export function transform(specifier, code, options) {
  * @param {any} config_val
  * @returns {any}
  */
-export function transformCSS(filename, code, config_val) {
+export function parcelCSS(filename, code, config_val) {
   try {
     const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
     const ptr0 = passStringToWasm0(
@@ -242,14 +201,7 @@ export function transformCSS(filename, code, config_val) {
       wasm.__wbindgen_realloc,
     );
     const len1 = WASM_VECTOR_LEN;
-    wasm.transformCSS(
-      retptr,
-      ptr0,
-      len0,
-      ptr1,
-      len1,
-      addHeapObject(config_val),
-    );
+    wasm.parcelCSS(retptr, ptr0, len0, ptr1, len1, addHeapObject(config_val));
     var r0 = getInt32Memory0()[retptr / 4 + 0];
     var r1 = getInt32Memory0()[retptr / 4 + 1];
     var r2 = getInt32Memory0()[retptr / 4 + 2];

@@ -7,7 +7,7 @@ The compiler of Aleph.js written in Rust, powered by [swc](https://github.com/sw
 ## Usage
 
 ```ts
-import { transform } from "https://deno.land/x/aleph_compiler@0.3.0/mod.ts";
+import { transform } from "https://deno.land/x/aleph_compiler@0.7.0/mod.ts";
 
 const code = `
 import { useState, useEffect } from "react"

@@ -1,4 +1,4 @@
-import { assert } from "https://deno.land/std@0.144.0/testing/asserts.ts";
+import "https://deno.land/x/global@0.144.0/testing.ts";
 import { transform } from "./mod.ts";
 
 Deno.test("swc", async (t) => {
