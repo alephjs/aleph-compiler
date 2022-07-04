@@ -47,7 +47,7 @@ async function existsFile(path: string): Promise<boolean> {
 async function initWasm() {
   if (import.meta.url.startsWith("file://")) {
     const wasmData = await Deno.readFile(
-      new URL("./dist/compiler.wasm", import.meta.url).pathname,
+      new URL("./dist/compiler.wasm", import.meta.url),
     );
     await init(wasmData);
   } else if (modulesCache) {
