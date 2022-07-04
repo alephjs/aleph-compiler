@@ -42,7 +42,6 @@ dependencies = [
  "cssparser",
  "import_map",
  "js-sys",
- "lazy_static",
  "parcel_css",
  "parcel_sourcemap",
  "path-slash",

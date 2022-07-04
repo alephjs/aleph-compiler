@@ -14,7 +14,6 @@ crate-type = ["cdylib", "rlib"]
 anyhow = "1.0.58"
 base64 = "0.13.0"
 import_map = "0.11.0"
-lazy_static = "1.4.0"
 path-slash = "0.1.5"
 pathdiff = "0.2.1"
 regex = "1.5.6"
