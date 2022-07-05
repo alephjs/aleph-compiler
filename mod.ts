@@ -43,8 +43,9 @@ async function existsFile(path: string): Promise<boolean> {
   }
 }
 
-/* initialize the compiler wasm module. */
-async function initWasm() {
+/** initialize the compiler wasm module. */
+export async function initWasm() {
+  const start = performance.now();
   if (import.meta.url.startsWith("file://")) {
     const wasmData = await Deno.readFile(
       new URL("./dist/compiler.wasm", import.meta.url),
@@ -73,16 +74,18 @@ async function initWasm() {
       new URL("./dist/compiler.wasm", import.meta.url),
     ));
   }
+  wasmReady = true;
+  console.debug(
+    `Initialized aleph-compiler wasm in ${
+      (performance.now() - start).toFixed(2)
+    }ms.`,
+  );
 }
 
 async function checkWasmReady() {
-  if (wasmReady === false) {
-    wasmReady = initWasm();
-  }
-  if (wasmReady instanceof Promise) {
-    await wasmReady;
-    wasmReady = true;
-  }
+  if (wasmReady === true) return;
+  if (wasmReady === false) wasmReady = initWasm();
+  await wasmReady;
 }
 
 /** Parse the deps of the modules. */
