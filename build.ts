@@ -1,6 +1,8 @@
 import { dim } from "https://deno.land/std@0.145.0/fmt/colors.ts";
 import { ensureDir } from "https://deno.land/std@0.145.0/fs/ensure_dir.ts";
+import { encode } from "https://deno.land/std@0.145.0/encoding/base64.ts";
 import { dirname } from "https://deno.land/std@0.145.0/path/mod.ts";
+import { compress } from "https://deno.land/x/lz4@v0.1.2/mod.ts";
 
 async function run(cmd: string[]) {
   const p = Deno.run({
@@ -20,14 +22,20 @@ if (import.meta.main) {
   if (ok) {
     let prevWasmSize: number;
     try {
-      prevWasmSize = (await Deno.stat("./dist/compiler.wasm")).size;
+      prevWasmSize = (await Deno.stat("./dist/wasm.js")).size;
     } catch (_e) {
       prevWasmSize = 0;
     }
+
     const wasmData = await Deno.readFile("./pkg/aleph_compiler_bg.wasm");
     const jsCode = await Deno.readTextFile("./pkg/aleph_compiler.js");
     await ensureDir("./dist");
-    await Deno.writeFile("./dist/compiler.wasm", wasmData);
+    await Deno.writeTextFile(
+      "./dist/wasm.js",
+      `import { decompress } from "https://deno.land/x/lz4@v0.1.2/mod.ts";\nexport default () => decompress(Uint8Array.from(atob("${
+        encode(compress(wasmData))
+      }"), c => c.charCodeAt(0)));`,
+    );
     await Deno.writeTextFile(
       "./dist/compiler.js",
       jsCode
@@ -50,11 +58,11 @@ if (import.meta.main) {
         ),
     );
     await run(["deno", "fmt", "-q", "./dist/compiler.js"]);
-    const wasmSize = (await Deno.stat("./dist/compiler.wasm")).size;
+    const wasmSize = (await Deno.stat("./dist/wasm.js")).size;
     const changed = ((wasmSize - prevWasmSize) / prevWasmSize) * 100;
     if (changed) {
       console.log(
-        `${dim("[INFO]")}: compiler.wasm ${changed < 0 ? "-" : "+"}${
+        `${dim("[INFO]")}: wasm.js ${changed < 0 ? "-" : "+"}${
           Math.abs(changed).toFixed(2)
         }% (${
           [prevWasmSize, wasmSize].filter(Boolean).map((n) =>

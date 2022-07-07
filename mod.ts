@@ -1,10 +1,11 @@
 import { ensureDir } from "https://deno.land/std@0.145.0/fs/ensure_dir.ts";
-import { dirname, join } from "https://deno.land/std@0.145.0/path/mod.ts";
+import { join } from "https://deno.land/std@0.145.0/path/mod.ts";
 import init, {
   parcelCSS,
   parseDeps as parseDepsWasmFn,
   transform as transformWasmFn,
 } from "./dist/compiler.js";
+import wasm from "./dist/wasm.js";
 import { VERSION } from "./version.ts";
 import type {
   DependencyDescriptor,
@@ -46,37 +47,31 @@ async function existsFile(path: string): Promise<boolean> {
 /** initialize the compiler wasm module. */
 export async function initWasm() {
   const start = performance.now();
-  if (import.meta.url.startsWith("file://")) {
-    const wasmData = await Deno.readFile(
-      new URL("./dist/compiler.wasm", import.meta.url),
-    );
-    await init(wasmData);
-  } else if (modulesCache) {
+  if (import.meta.url.startsWith("https://") && modulesCache) {
     const cacheDir = join(
       modulesCache,
       `https/deno.land/x/aleph_compiler@${VERSION}/dist`,
     );
-    const cachePath = `${cacheDir}/compiler.wasm`;
+    const cachePath = join(cacheDir, "compiler.wasm");
     if (await existsFile(cachePath)) {
-      const wasmData = await Deno.readFile(cachePath);
-      await init(wasmData);
-    } else {
-      const res = await fetch(
-        new URL("./dist/compiler.wasm", import.meta.url),
+      const file = await Deno.open(cachePath, { read: true });
+      await init(
+        new Response(file.readable, {
+          headers: [["Content-Type", "application/wasm"]],
+        }),
       );
-      const wasmData = await res.arrayBuffer();
+    } else {
+      const wasmData = wasm();
       await init(wasmData);
-      await ensureDir(dirname(cachePath));
-      await Deno.writeFile(cachePath, new Uint8Array(wasmData));
+      await ensureDir(cacheDir);
+      await Deno.writeFile(cachePath, wasmData);
     }
   } else {
-    await init(fetch(
-      new URL("./dist/compiler.wasm", import.meta.url),
-    ));
+    await init(wasm());
   }
   wasmReady = true;
   console.debug(
-    `Initialized aleph-compiler wasm in ${
+    `Initialized aleph-compiler WebAssembly in ${
       (performance.now() - start).toFixed(2)
     }ms.`,
   );
