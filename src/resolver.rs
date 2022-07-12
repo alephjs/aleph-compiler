@@ -84,7 +84,7 @@ impl Resolver {
         local_path.push_str(port.to_string().as_str());
       }
     }
-    local_path.push_str(pathname.to_owned().to_slash().unwrap().as_str());
+    local_path.push_str(&pathname.to_owned().to_slash().unwrap().to_string());
     if let Some(query) = url.query() {
       local_path.push('?');
       local_path.push_str(query);
