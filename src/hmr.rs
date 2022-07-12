@@ -27,14 +27,14 @@ impl Fold for HmrFold {
     let mut react_refresh = false;
     let aleph_pkg_uri = resolver.aleph_pkg_uri.to_owned();
 
-    // import __CREATE_HOT_CONTEXT__ from "$aleph_pkg_uri/framework/core/hmr.ts"
+    // import __CREATE_HOT_CONTEXT__ from "$aleph_pkg_uri/runtime/core/hmr.ts"
     items.push(ModuleItem::ModuleDecl(ModuleDecl::Import(ImportDecl {
       span: DUMMY_SP,
       specifiers: vec![ImportSpecifier::Default(ImportDefaultSpecifier {
         span: DUMMY_SP,
         local: quote_ident!("__CREATE_HOT_CONTEXT__"),
       })],
-      src: new_str(&resolver.to_local_path(&(aleph_pkg_uri + "/framework/core/hmr.ts"))),
+      src: new_str(&resolver.to_local_path(&(aleph_pkg_uri + "/runtime/core/hmr.ts"))),
       type_only: false,
       asserts: None,
     })));
@@ -73,14 +73,14 @@ impl Fold for HmrFold {
 
     if react_refresh {
       let aleph_pkg_uri = resolver.aleph_pkg_uri.to_owned();
-      // import { __REACT_REFRESH_RUNTIME__, __REACT_REFRESH__ } from "$aleph_pkg_uri/framework/react/refresh.ts"
+      // import { __REACT_REFRESH_RUNTIME__, __REACT_REFRESH__ } from "$aleph_pkg_uri/runtime/react/refresh.ts"
       items.push(ModuleItem::ModuleDecl(ModuleDecl::Import(ImportDecl {
         span: DUMMY_SP,
         specifiers: vec![
           import_name("__REACT_REFRESH_RUNTIME__"),
           import_name("__REACT_REFRESH__"),
         ],
-        src: new_str(&resolver.to_local_path(&(aleph_pkg_uri + "/framework/react/refresh.ts"))),
+        src: new_str(&resolver.to_local_path(&(aleph_pkg_uri + "/runtime/react/refresh.ts"))),
         type_only: false,
         asserts: None,
       })));
