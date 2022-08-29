@@ -7,7 +7,8 @@ const cachedTextDecoder = new TextDecoder("utf-8", {
 
 cachedTextDecoder.decode();
 
-let cachedUint8Memory0;
+let cachedUint8Memory0 = new Uint8Array();
+
 function getUint8Memory0() {
   if (cachedUint8Memory0.byteLength === 0) {
     cachedUint8Memory0 = new Uint8Array(wasm.memory.buffer);
@@ -93,7 +94,8 @@ function passStringToWasm0(arg, malloc, realloc) {
   return ptr;
 }
 
-let cachedInt32Memory0;
+let cachedInt32Memory0 = new Int32Array();
+
 function getInt32Memory0() {
   if (cachedInt32Memory0.byteLength === 0) {
     cachedInt32Memory0 = new Int32Array(wasm.memory.buffer);
@@ -294,7 +296,7 @@ function getImports() {
       wasm.__wbindgen_free(arg0, arg1);
     }
   };
-  imports.wbg.__wbg_new_651776e932b7e9c7 = function (arg0, arg1) {
+  imports.wbg.__wbg_new_3ee7ebe9952c1fbd = function (arg0, arg1) {
     const ret = new Error(getStringFromWasm0(arg0, arg1));
     return addHeapObject(ret);
   };
@@ -311,8 +313,8 @@ function initMemory(imports, maybe_memory) {
 function finalizeInit(instance, module) {
   wasm = instance.exports;
   init.__wbindgen_wasm_module = module;
-  cachedInt32Memory0 = new Int32Array(wasm.memory.buffer);
-  cachedUint8Memory0 = new Uint8Array(wasm.memory.buffer);
+  cachedInt32Memory0 = new Int32Array();
+  cachedUint8Memory0 = new Uint8Array();
 
   return wasm;
 }

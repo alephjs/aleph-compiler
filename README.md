@@ -7,7 +7,7 @@ The compiler of Aleph.js written in Rust, powered by [swc](https://github.com/sw
 ## Usage
 
 ```ts
-import { transform } from "https://deno.land/x/aleph_compiler@0.7.0/mod.ts";
+import { transform } from "https://deno.land/x/aleph_compiler@0.7.5/mod.ts";
 
 const code = `
 import { useState, useEffect } from "react"
@@ -40,7 +40,7 @@ console.log(ret.code, ret.map)
 
 ## Development Setup
 
-You will need [rust](https://www.rust-lang.org/tools/install) 1.56+ and [wasm-pack](https://rustwasm.github.io/wasm-pack/installer/).
+You will need [rust](https://www.rust-lang.org/tools/install) 1.60+ and [wasm-pack](https://rustwasm.github.io/wasm-pack/installer/).
 
 ## Build
 
