@@ -197,12 +197,16 @@ impl SWC {
           should_enable(options.target, EsVersion::Es2018)
         ),
         Optional::new(
-          compat::es2017(compat::es2017::Config {
-            async_to_generator: compat::es2017::async_to_generator::Config {
-              ignore_function_name: assumptions.ignore_function_name,
-              ignore_function_length: assumptions.ignore_function_length
-            }
-          }),
+          compat::es2017(
+            compat::es2017::Config {
+              async_to_generator: compat::es2017::async_to_generator::Config {
+                ignore_function_name: assumptions.ignore_function_name,
+                ignore_function_length: assumptions.ignore_function_length
+              }
+            },
+            Some(&self.comments),
+            unresolved_mark,
+          ),
           should_enable(options.target, EsVersion::Es2017)
         ),
         Optional::new(compat::es2016(), should_enable(options.target, EsVersion::Es2016)),

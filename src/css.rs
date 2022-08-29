@@ -96,9 +96,9 @@ pub struct Drafts {
 pub fn compile<'i>(filename: String, code: &'i str, config: &Config) -> Result<TransformResult, CompileError<'i>> {
   let drafts = config.drafts.as_ref();
   let mut stylesheet = StyleSheet::parse(
-    &filename,
     &code,
     ParserOptions {
+      filename: filename.clone(),
       nesting: matches!(drafts, Some(d) if d.nesting),
       custom_media: matches!(drafts, Some(d) if d.custom_media),
       css_modules: if let Some(css_modules) = &config.css_modules {
@@ -116,6 +116,8 @@ pub fn compile<'i>(filename: String, code: &'i str, config: &Config) -> Result<T
         None
       },
       source_index: 0,
+      error_recovery: false,
+      warnings: None,
     },
   )?;
   stylesheet.minify(MinifyOptions {

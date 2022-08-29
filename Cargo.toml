@@ -11,35 +11,35 @@ edition = "2021"
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]
-anyhow = "1.0.58"
+anyhow = "1.0.62"
 base64 = "0.13.0"
-import_map = "0.11.0"
+import_map = "0.12.1"
 path-slash = "0.2.0"
 pathdiff = "0.2.1"
 regex = "1.6.0"
-serde = { version = "1.0.139", features = ["derive"] }
-serde_json = "1.0.82"
+serde = { version = "1.0.144", features = ["derive"] }
+serde_json = "1.0.85"
 url = "2.2.2"
 
 # parcel css
 cssparser = "0.29.6"
-parcel_css = "1.0.0-alpha.28"
+parcel_css = "1.0.0-alpha.31"
 parcel_sourcemap = "2.1.0"
 
 # swc
 # docs: https://swc.rs
 # crate: https://crates.io/search?q=swc_ecmascript
-swc_atoms = "0.2.13"
-swc_common = { version = "0.23.0", features = ["sourcemap", "perf"] }
-swc_ecmascript = { version = "0.180.0", features = ["codegen", "parser", "utils", "visit"] }
-swc_ecma_transforms = { version = "0.175.0", features = ["proposal", "typescript", "react", "compat", "optimization" ] }
-swc_ecma_minifier = "0.136.1"
+swc_atoms = "0.4.9"
+swc_common = { version = "0.27.13", features = ["sourcemap", "perf"] }
+swc_ecmascript = { version = "0.195.0", features = ["codegen", "parser", "utils", "visit"] }
+swc_ecma_transforms = { version = "0.188.0", features = ["proposal", "typescript", "react", "compat", "optimization" ] }
+swc_ecma_minifier = "0.149.5"
 
 # wasm-bindgen
 # docs: https://rustwasm.github.io/docs/wasm-bindgen
-wasm-bindgen = { version = "0.2.81", features = ["serde-serialize"] }
+wasm-bindgen = { version = "0.2.82", features = ["serde-serialize"] }
 console_error_panic_hook = { version = "0.1.7", optional = true }
-js-sys = "0.3.58"
+js-sys = "0.3.59"
 
 [features]
 default = ["console_error_panic_hook"]
