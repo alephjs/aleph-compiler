@@ -36,35 +36,37 @@ fn transform(specifer: &str, source: &str, is_dev: bool, options: &EmitOptions) 
 #[test]
 fn typescript() {
   let source = r#"
-      enum D {
-        A,
-        B,
-        C,
-      }
+    enum D {
+      A,
+      B,
+      C,
+    }
 
-      function enumerable(value: boolean) {
-        return function (
-          _target: any,
-          _propertyKey: string,
-          descriptor: PropertyDescriptor,
-        ) {
-          descriptor.enumerable = value;
-        };
-      }
+    function enumerable(value: boolean) {
+      return function (
+        _target: any,
+        _propertyKey: string,
+        descriptor: PropertyDescriptor,
+      ) {
+        descriptor.enumerable = value;
+      };
+    }
 
-      export class A {
-        #a: string;
-        private b: string;
-        protected c: number = 1;
-        e: "foo";
-        constructor (public d = D.A) {
-          const e = "foo" as const;
-          this.e = e;
-        }
-        @enumerable(false)
-        bar() {}
+    export class A {
+      #a: string;
+      private b: string;
+      protected c: number = 1;
+      e: "foo";
+      constructor (public d = D.A) {
+        const e = "foo" as const;
+        this.e = e;
       }
-    "#;
+      @enumerable(false)
+      bar() {}
+    }
+
+    console.log(`${toString({class: A})}`)
+  "#;
   let (code, _) = transform("mod.ts", source, false, &EmitOptions::default());
   assert!(code.contains("var D;"));
   assert!(Regex::new(r"\[\s*enumerable\(false\)\s*\]").unwrap().is_match(&code));
@@ -120,20 +122,20 @@ fn parcel_css() {
 #[test]
 fn import_resolving() {
   let source = r#"
-      import React from "react"
-      import { foo } from "~/foo.ts"
-      import Layout from "./Layout.tsx"
-      import "https://esm.sh/@fullcalendar/daygrid?css&dev"
-      import "../../style/app.css"
+    import React from "react"
+    import { foo } from "~/foo.ts"
+    import Layout from "./Layout.tsx"
+    import "https://esm.sh/@fullcalendar/daygrid?css&dev"
+    import "../../style/app.css"
 
-      foo()
-      export default () => <Layout />
+    foo()
+    export default () => <Layout />
 
-      setTimeout(() => {
-        import("https://esm.sh/asksomeonelse")
-        new Worker("https://esm.sh/asksomeonelse")
-      }, 1000)
-    "#;
+    setTimeout(() => {
+      import("https://esm.sh/asksomeonelse")
+      new Worker("https://esm.sh/asksomeonelse")
+    }, 1000)
+  "#;
   let (code, _) = transform("./pages/blog/$id.tsx", source, false, &EmitOptions::default());
   assert!(code.contains("\"/-/esm.sh/react@18?v=1.0.0\""));
   assert!(code.contains("\"../../foo.ts?v=100\""));
@@ -147,15 +149,15 @@ fn import_resolving() {
 #[test]
 fn jsx_automtic() {
   let source = r#"
-      /** @jsxImportSource https://esm.sh/react@18 */
-      export default function App() {
-        return (
-          <>
-            <h1 className="title">Hello world!</h1>
-          </>
-        )
-      }
-    "#;
+    /** @jsxImportSource https://esm.sh/react@18 */
+    export default function App() {
+      return (
+        <>
+          <h1 className="title">Hello world!</h1>
+        </>
+      )
+    }
+  "#;
   let (code, resolver) = transform(
     "./app.tsx",
     source,
@@ -180,14 +182,14 @@ fn jsx_automtic() {
 #[test]
 fn react_refresh() {
   let source = r#"
-      import { useState } from "react"
-      export default function App() {
-        const [ msg ] = useState('Hello world!')
-        return (
-          <h1 className="title">{msg}{foo()}</h1>
-        )
-      }
-    "#;
+    import { useState } from "react"
+    export default function App() {
+      const [ msg ] = useState('Hello world!')
+      return (
+        <h1 className="title">{msg}{foo()}</h1>
+      )
+    }
+  "#;
   let (code, _) = transform(
     "./app.tsx",
     source,
@@ -219,38 +221,38 @@ fn react_refresh() {
 #[test]
 fn strip_data_export() {
   let source = r#"
-      import { json } from "./helper.ts"
-      const count = 0;
-      export const data = {
-        get: (req: Request) => {
-         return json({ count })
-        },
-        post: (req: Request) => {
-          return json({ count })
-         }
-      }
-      export const GET = (req: Request) => {
+    import { json } from "./helper.ts"
+    const count = 0;
+    export const data = {
+      get: (req: Request) => {
         return json({ count })
-      }
-      export const POST = (req: Request) => {
+      },
+      post: (req: Request) => {
         return json({ count })
-      }
-      export const PUT = (req: Request) => {
-        return json({ count })
-      }
-      export function PATCH(req: Request) {
-        return json({ count })
-      }
-      export function DELETE(req: Request) {
-        return json({ count })
-      }
-      export function log(msg: string) {
-        console.log(msg)
-      }
-      export default function App() {
-        return <div>Hello world!</div>
-      }
-    "#;
+        }
+    }
+    export const GET = (req: Request) => {
+      return json({ count })
+    }
+    export const POST = (req: Request) => {
+      return json({ count })
+    }
+    export const PUT = (req: Request) => {
+      return json({ count })
+    }
+    export function PATCH(req: Request) {
+      return json({ count })
+    }
+    export function DELETE(req: Request) {
+      return json({ count })
+    }
+    export function log(msg: string) {
+      console.log(msg)
+    }
+    export default function App() {
+      return <div>Hello world!</div>
+    }
+  "#;
   let (code, r) = transform(
     "./app.tsx",
     source,

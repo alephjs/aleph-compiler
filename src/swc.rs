@@ -59,6 +59,7 @@ pub struct SWC {
 impl SWC {
   /// parse source code.
   pub fn parse(specifier: &str, source: &str, target: EsVersion, lang: Option<String>) -> Result<Self, anyhow::Error> {
+    print!("--- {} {:?} {:?}\n", specifier, target, lang);
     let source_map = SourceMap::default();
     let source_file = source_map.new_source_file(FileName::Real(Path::new(specifier).to_path_buf()), source.into());
     let sm = &source_map;
@@ -253,7 +254,14 @@ impl SWC {
           is_jsx
         ),
         Optional::new(hmr(resolver.clone()), is_dev && !specifier_is_remote),
-        dce::dce(dce::Config { module_mark: None }, unresolved_mark),
+        dce::dce(
+          dce::Config {
+            module_mark: None,
+            top_level: true,
+            top_retain: vec![],
+          },
+          unresolved_mark
+        ),
         Optional::new(
           as_folder(MinifierPass {
             cm: self.source_map.clone(),
@@ -324,7 +332,7 @@ impl SWC {
         cfg: swc_ecmascript::codegen::Config {
           target: options.target,
           minify: options.minify.is_some(),
-          ascii_only: false,
+          ..Default::default()
         },
         comments: Some(&self.comments),
         cm: self.source_map.clone(),
