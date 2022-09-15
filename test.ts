@@ -1,17 +1,61 @@
 import "https://deno.land/x/global@0.144.0/testing.ts";
-import { transform } from "./mod.ts";
+import { transform, transformCSS } from "./mod.ts";
 
-Deno.test("swc", async (t) => {
-  await t.step("ts", async () => {
+Deno.test("aleph compiler", async (t) => {
+  await t.step("transform css", async () => {
+    const ret = await transformCSS(
+      "./app.css",
+      `@custom-media --modern (color), (hover);
+
+      .foo {
+        background: yellow;
+
+        -webkit-border-radius: 2px;
+        -moz-border-radius: 2px;
+        border-radius: 2px;
+
+        -webkit-transition: background 200ms;
+        -moz-transition: background 200ms;
+        transition: background 200ms;
+
+        &.bar {
+          color: green;
+        }
+      }
+
+      @media (--modern) and (width > 1024px) {
+        .a {
+          color: green;
+        }
+      }`,
+      {
+        minify: true,
+        targets: {
+          chrome: 95,
+        },
+        drafts: {
+          nesting: true,
+          customMedia: true,
+        },
+      },
+    );
+
+    assertEquals(
+      ret.code,
+      `.foo{background:#ff0;border-radius:2px;transition:background .2s}.foo.bar{color:green}@media ((color) or (hover)) and (min-width:1024px){.a{color:green}}`,
+    );
+  });
+
+  await t.step("transform ts", async () => {
     const ret = await transform(
       "./mod.ts",
       await Deno.readTextFile("./mod.ts"),
     );
 
-    assert(ret.code.includes(`function transform(`));
+    assertStringIncludes(ret.code, `function transform(`);
   });
 
-  await t.step("jsx", async () => {
+  await t.step("transform jsx", async () => {
     const ret = await transform(
       "./app.jsx",
       `
@@ -23,16 +67,16 @@ Deno.test("swc", async (t) => {
       `,
     );
 
-    assert(ret.code.includes(`React.createElement("h1"`));
+    assertStringIncludes(ret.code, `React.createElement("h1"`);
   });
 
-  await t.step("js", async () => {
+  await t.step("transform large js", async () => {
     const ret = await transform(
       "./gsi-client.js",
       await Deno.readTextFile("./testdata/gsi-client.js"),
       { minify: { compress: true } },
     );
 
-    assert(ret.code.includes(`this.default_gsi`));
+    assertStringIncludes(ret.code, `this.default_gsi`);
   });
 });
