@@ -1,5 +1,5 @@
-import { ensureDir } from "https://deno.land/std@0.145.0/fs/ensure_dir.ts";
-import { join } from "https://deno.land/std@0.145.0/path/mod.ts";
+import { ensureDir } from "https://deno.land/std@0.155.0/fs/ensure_dir.ts";
+import { join } from "https://deno.land/std@0.155.0/path/mod.ts";
 import init, {
   parcelCSS,
   parseDeps as parseDepsWasmFn,
@@ -122,7 +122,7 @@ export async function transform(
       options.minify &&
       (error.stack ?? error.messsage ?? "").includes("ThreadPoolBuildError")
     ) {
-      // disable minify if ThreadPoolBuildError
+      // retry and disable minify if ThreadPoolBuildError
       if (options.minify.compress) {
         return await transform(specifier, code, {
           ...options,
