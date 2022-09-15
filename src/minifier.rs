@@ -16,10 +16,10 @@ pub struct MinifierPass {
   pub options: MinifierOptions,
 }
 
-#[derive(Deserialize, Debug, Clone, Copy)]
+#[derive(Deserialize, Clone, Copy)]
 #[serde(rename_all = "camelCase")]
 pub struct MinifierOptions {
-  pub compress: bool,
+  pub compress: Option<bool>,
 }
 
 impl VisitMut for MinifierPass {
@@ -33,7 +33,7 @@ impl VisitMut for MinifierPass {
         self.comments.as_ref().map(|v| v as &dyn Comments),
         None,
         &MinifyOptions {
-          compress: if self.options.compress {
+          compress: if self.options.compress.unwrap_or_default() {
             Some(Default::default())
           } else {
             None

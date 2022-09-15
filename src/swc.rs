@@ -21,7 +21,7 @@ use swc_ecmascript::parser::{EsConfig, StringInput, Syntax, TsConfig};
 use swc_ecmascript::visit::{as_folder, Fold, FoldWith};
 
 /// Options for transpiling a module.
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct EmitOptions {
   pub target: EsVersion,
   pub jsx_pragma: Option<String>,
@@ -268,7 +268,7 @@ impl SWC {
             comments: Some(self.comments.clone()),
             unresolved_mark,
             top_level_mark,
-            options: options.minify.unwrap_or(MinifierOptions { compress: false }),
+            options: options.minify.unwrap_or(MinifierOptions { compress: Some(false) }),
           }),
           options.minify.is_some()
         ),

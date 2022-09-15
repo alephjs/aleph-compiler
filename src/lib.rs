@@ -24,55 +24,20 @@ use wasm_bindgen::prelude::{wasm_bindgen, JsValue};
 #[derive(Deserialize)]
 #[serde(deny_unknown_fields, rename_all = "camelCase")]
 pub struct Options {
-  #[serde(default = "default_aleph_pkg_uri")]
-  pub aleph_pkg_uri: String,
-
-  #[serde(default)]
-  pub is_dev: bool,
-
-  #[serde(default)]
+  pub aleph_pkg_uri: Option<String>,
+  pub is_dev: Option<bool>,
   pub lang: Option<String>,
-
-  #[serde(default)]
   pub import_map: Option<String>,
-
-  #[serde(default)]
   pub global_version: Option<String>,
-
-  #[serde(default)]
-  pub graph_versions: HashMap<String, String>,
-
-  #[serde(default = "default_target")]
-  pub target: String,
-
-  #[serde(default)]
+  pub graph_versions: Option<HashMap<String, String>>,
+  pub target: Option<String>,
   pub jsx_pragma: Option<String>,
-
-  #[serde(default)]
   pub jsx_pragma_frag: Option<String>,
-
-  #[serde(default)]
   pub jsx_import_source: Option<String>,
-
-  #[serde(default)]
-  pub react_refresh: bool,
-
-  #[serde(default)]
-  pub strip_data_export: bool,
-
-  #[serde(default)]
-  pub source_map: bool,
-
-  #[serde(default)]
+  pub react_refresh: Option<bool>,
+  pub strip_data_export: Option<bool>,
+  pub source_map: Option<bool>,
   pub minify: Option<MinifierOptions>,
-}
-
-fn default_target() -> String {
-  return "es2022".into();
-}
-
-fn default_aleph_pkg_uri() -> String {
-  return "https://deno.land/x/aleph".into();
 }
 
 #[derive(Serialize)]
@@ -91,10 +56,7 @@ pub struct TransformOutput {
 pub fn parse_deps(specifier: &str, code: &str, options: JsValue) -> Result<JsValue, JsValue> {
   console_error_panic_hook::set_once();
 
-  let options: Options = options
-    .into_serde()
-    .map_err(|err| format!("failed to parse options: {}", err))
-    .unwrap();
+  let options: Options = serde_wasm_bindgen::from_value(options).unwrap();
   let importmap = import_map::parse_from_json(
     &Url::from_str("file:///").unwrap(),
     options.import_map.unwrap_or("{}".into()).as_str(),
@@ -113,17 +75,14 @@ pub fn parse_deps(specifier: &str, code: &str, options: JsValue) -> Result<JsVal
   let module = SWC::parse(specifier, code, EsVersion::Es2022, options.lang).expect("could not parse the module");
   let deps = module.parse_deps(resolver).expect("could not parse the module");
 
-  Ok(JsValue::from_serde(&deps).unwrap())
+  Ok(serde_wasm_bindgen::to_value(&deps).unwrap())
 }
 
 #[wasm_bindgen(js_name = "transform")]
 pub fn transform(specifier: &str, code: &str, options: JsValue) -> Result<JsValue, JsValue> {
   console_error_panic_hook::set_once();
 
-  let options: Options = options
-    .into_serde()
-    .map_err(|err| format!("failed to parse options: {}", err))
-    .unwrap();
+  let options: Options = serde_wasm_bindgen::from_value(options).unwrap();
   let importmap = import_map::parse_from_json(
     &Url::from_str("file:///").unwrap(),
     options.import_map.unwrap_or("{}".into()).as_str(),
@@ -132,14 +91,14 @@ pub fn transform(specifier: &str, code: &str, options: JsValue) -> Result<JsValu
   .import_map;
   let resolver = Rc::new(RefCell::new(Resolver::new(
     specifier,
-    &options.aleph_pkg_uri,
+    &options.aleph_pkg_uri.unwrap_or("https://deno.land/x/aleph".into()),
     importmap,
-    options.graph_versions,
+    options.graph_versions.unwrap_or_default(),
     options.global_version,
-    options.is_dev,
+    options.is_dev.unwrap_or_default(),
     true,
   )));
-  let target = match options.target.as_str() {
+  let target = match options.target.unwrap_or_default().as_str() {
     "es2015" => EsVersion::Es2015,
     "es2016" => EsVersion::Es2016,
     "es2017" => EsVersion::Es2017,
@@ -148,7 +107,7 @@ pub fn transform(specifier: &str, code: &str, options: JsValue) -> Result<JsValu
     "es2020" => EsVersion::Es2020,
     "es2021" => EsVersion::Es2021,
     "es2022" => EsVersion::Es2022,
-    _ => EsVersion::Es2015, // minium version
+    _ => EsVersion::Es2022, // latest version
   };
   let module = SWC::parse(specifier, code, target, options.lang).expect("could not parse the module");
   let (code, map) = module
@@ -159,17 +118,17 @@ pub fn transform(specifier: &str, code: &str, options: JsValue) -> Result<JsValu
         jsx_pragma: options.jsx_pragma,
         jsx_pragma_frag: options.jsx_pragma_frag,
         jsx_import_source: options.jsx_import_source,
-        react_refresh: options.react_refresh,
-        strip_data_export: options.strip_data_export,
+        react_refresh: options.react_refresh.unwrap_or_default(),
+        strip_data_export: options.strip_data_export.unwrap_or_default(),
         minify: options.minify,
-        source_map: options.source_map,
+        source_map: options.source_map.unwrap_or_default(),
       },
     )
     .expect("could not transform the module");
   let r = resolver.borrow();
 
   Ok(
-    JsValue::from_serde(&TransformOutput {
+    serde_wasm_bindgen::to_value(&TransformOutput {
       code,
       deps: r.deps.clone(),
       map,
@@ -179,11 +138,8 @@ pub fn transform(specifier: &str, code: &str, options: JsValue) -> Result<JsValu
 }
 
 #[wasm_bindgen(js_name = "parcelCSS")]
-pub fn parcel_css(filename: &str, code: &str, config_val: JsValue) -> Result<JsValue, JsValue> {
-  let config: css::Config = config_val
-    .into_serde()
-    .map_err(|err| format!("failed to parse options: {}", err))
-    .unwrap();
+pub fn parcel_css(filename: &str, code: &str, config_raw: JsValue) -> Result<JsValue, JsValue> {
+  let config: css::Config = serde_wasm_bindgen::from_value(config_raw).unwrap();
   let res = css::compile(filename.into(), code, &config)?;
-  Ok(JsValue::from_serde(&res).unwrap())
+  Ok(serde_wasm_bindgen::to_value(&res).unwrap())
 }
