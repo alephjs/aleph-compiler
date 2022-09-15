@@ -106,6 +106,7 @@ impl Fold for ResolveFold {
               span,
             }) => {
               let mut data_export_idx = -1;
+              let mut data_export_name = "".to_string();
               if self.strip_data_export && var.decls.len() > 0 {
                 let mut i = 0;
                 for decl in &var.decls {
@@ -114,6 +115,7 @@ impl Fold for ResolveFold {
                       match bi.id.sym.as_ref() {
                         "data" | "GET" | "POST" | "PUT" | "PATCH" | "DELETE" => {
                           data_export_idx = i;
+                          data_export_name = bi.id.sym.to_string();
                           break;
                         }
                         _ => {}
@@ -134,12 +136,59 @@ impl Fold for ResolveFold {
                       .map(|decl| {
                         i += 1;
                         if data_export_idx == i {
+                          let mut init = Some(Box::new(Expr::Lit(Lit::Bool(Bool {
+                            span: DUMMY_SP,
+                            value: true,
+                          }))));
+                          if data_export_name == "data" {
+                            if let Some(expr) = decl.init {
+                              if let Expr::Object(obj) = *expr {
+                                init = Some(Box::new(Expr::Object(ObjectLit {
+                                  span: obj.span,
+                                  props: obj
+                                    .props
+                                    .into_iter()
+                                    .map(|prop| match prop {
+                                      PropOrSpread::Prop(prop) => match *prop {
+                                        Prop::Shorthand(ident) => {
+                                          PropOrSpread::Prop(Box::new(Prop::KeyValue(KeyValueProp {
+                                            key: PropName::Ident(ident),
+                                            value: Box::new(Expr::Lit(Lit::Bool(Bool {
+                                              span: DUMMY_SP,
+                                              value: true,
+                                            }))),
+                                          })))
+                                        }
+                                        Prop::KeyValue(KeyValueProp { key, .. }) => {
+                                          PropOrSpread::Prop(Box::new(Prop::KeyValue(KeyValueProp {
+                                            key,
+                                            value: Box::new(Expr::Lit(Lit::Bool(Bool {
+                                              span: DUMMY_SP,
+                                              value: true,
+                                            }))),
+                                          })))
+                                        }
+                                        Prop::Method(MethodProp { key, .. }) => {
+                                          PropOrSpread::Prop(Box::new(Prop::KeyValue(KeyValueProp {
+                                            key,
+                                            value: Box::new(Expr::Lit(Lit::Bool(Bool {
+                                              span: DUMMY_SP,
+                                              value: true,
+                                            }))),
+                                          })))
+                                        }
+                                        _ => PropOrSpread::Prop(prop),
+                                      },
+                                      _ => prop,
+                                    })
+                                    .collect(),
+                                })))
+                              }
+                            }
+                          }
                           VarDeclarator {
                             span: DUMMY_SP,
-                            init: Some(Box::new(Expr::Lit(Lit::Bool(Bool {
-                              span: DUMMY_SP,
-                              value: true,
-                            })))),
+                            init,
                             ..decl
                           }
                         } else {
@@ -176,6 +225,7 @@ impl Fold for ResolveFold {
                       span: DUMMY_SP,
                       params: vec![],
                       decorators: vec![],
+                      // empty body
                       body: Some(BlockStmt {
                         span: DUMMY_SP,
                         stmts: vec![],
