@@ -1,4 +1,7 @@
-import "https://deno.land/x/global@0.144.0/testing.ts";
+import {
+  assertEquals,
+  assertStringIncludes,
+} from "https://deno.land/std@0.155.0/testing/asserts.ts";
 import { transform, transformCSS } from "./mod.ts";
 
 Deno.test("aleph compiler", async (t) => {
@@ -68,6 +71,25 @@ Deno.test("aleph compiler", async (t) => {
     );
 
     assertStringIncludes(ret.code, `React.createElement("h1"`);
+  });
+
+  await t.step("transform jsx (jsxImportSource)", async () => {
+    const ret = await transform(
+      "./app.jsx",
+      `
+        export default function App() {
+          return <h1>Hello world!</h1>
+        }
+      `,
+      {
+        jsxImportSource: "https://esm.sh/react",
+      },
+    );
+    assertStringIncludes(
+      ret.code,
+      `import { jsx as _jsx } from "/-/esm.sh/react/jsx-runtime"`,
+    );
+    assertStringIncludes(ret.code, `_jsx("h1"`);
   });
 
   await t.step("transform large js", async () => {

@@ -1,5 +1,5 @@
 use super::*;
-use parcel_css::targets::Browsers;
+use lightningcss::targets::Browsers;
 use regex::Regex;
 use std::collections::HashMap;
 
