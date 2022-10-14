@@ -23,7 +23,7 @@ url = "2.3.1"
 
 # parcel css
 cssparser = "0.29.6"
-parcel_css = "1.0.0-alpha.32"
+lightningcss = "1.0.0-alpha.35"
 parcel_sourcemap = "2.1.1"
 
 # swc

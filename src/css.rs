@@ -5,12 +5,11 @@
   ! below code was copied from https://github.com/parcel-bundler/parcel-css/blob/510df4e2d825927115427b690d6706da395d2170/node/src/lib.rs, and removed node napi code
 */
 
-use parcel_css::bundler::BundleErrorKind;
-use parcel_css::css_modules::CssModuleExports;
-use parcel_css::dependencies::Dependency;
-use parcel_css::error::{Error, MinifyErrorKind, ParserError, PrinterErrorKind};
-use parcel_css::stylesheet::{MinifyOptions, ParserOptions, PrinterOptions, PseudoClasses, StyleSheet};
-use parcel_css::targets::Browsers;
+use lightningcss::css_modules::CssModuleExports;
+use lightningcss::dependencies::Dependency;
+use lightningcss::error::{Error, MinifyErrorKind, ParserError, PrinterErrorKind};
+use lightningcss::stylesheet::{MinifyOptions, ParserOptions, PrinterOptions, PseudoClasses, StyleSheet};
+use lightningcss::targets::Browsers;
 use parcel_sourcemap::SourceMap;
 use serde::{Deserialize, Serialize};
 use std::collections::HashSet;
@@ -36,13 +35,20 @@ pub struct TransformResult {
 
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
+pub struct DependencyOptions {
+  /// Whether to remove `@import` rules.
+  pub remove_imports: bool,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Config {
   pub targets: Option<Browsers>,
   pub minify: Option<bool>,
   pub source_map: Option<bool>,
   pub drafts: Option<Drafts>,
   pub css_modules: Option<CssModulesOption>,
-  pub analyze_dependencies: Option<bool>,
+  pub analyze_dependencies: Option<DependencyOptions>,
   pub pseudo_classes: Option<OwnedPseudoClasses>,
   pub unused_symbols: Option<HashSet<String>>,
 }
@@ -103,11 +109,11 @@ pub fn compile<'i>(filename: String, code: &'i str, config: &Config) -> Result<T
       custom_media: matches!(drafts, Some(d) if d.custom_media),
       css_modules: if let Some(css_modules) = &config.css_modules {
         match css_modules {
-          CssModulesOption::Bool(true) => Some(parcel_css::css_modules::Config::default()),
+          CssModulesOption::Bool(true) => Some(lightningcss::css_modules::Config::default()),
           CssModulesOption::Bool(false) => None,
-          CssModulesOption::Config(c) => Some(parcel_css::css_modules::Config {
+          CssModulesOption::Config(c) => Some(lightningcss::css_modules::Config {
             pattern: c.pattern.as_ref().map_or(Default::default(), |pattern| {
-              parcel_css::css_modules::Pattern::parse(pattern).unwrap()
+              lightningcss::css_modules::Pattern::parse(pattern).unwrap()
             }),
             dashed_idents: c.dashed_idents,
           }),
@@ -138,7 +144,13 @@ pub fn compile<'i>(filename: String, code: &'i str, config: &Config) -> Result<T
     minify: config.minify.unwrap_or(false),
     source_map: source_map.as_mut(),
     targets: config.targets,
-    analyze_dependencies: config.analyze_dependencies.unwrap_or(false),
+    analyze_dependencies: if let Some(analyze_dependencies) = &config.analyze_dependencies {
+      Some(lightningcss::dependencies::DependencyOptions {
+        remove_imports: analyze_dependencies.remove_imports,
+      })
+    } else {
+      None
+    },
     pseudo_classes: config.pseudo_classes.as_ref().map(|p| p.into()),
   })?;
 
@@ -194,7 +206,6 @@ pub enum CompileError<'i> {
   MinifyError(Error<MinifyErrorKind>),
   PrinterError(Error<PrinterErrorKind>),
   SourceMapError(parcel_sourcemap::SourceMapError),
-  BundleError(Error<BundleErrorKind<'i>>),
 }
 
 impl<'i> CompileError<'i> {
@@ -203,7 +214,6 @@ impl<'i> CompileError<'i> {
       CompileError::ParseError(e) => format!("{}", e),
       CompileError::MinifyError(e) => format!("{}", e),
       CompileError::PrinterError(e) => format!("{}", e),
-      CompileError::BundleError(e) => format!("{}", e),
       _ => "Unknown error".into(),
     }
   }
@@ -230,12 +240,6 @@ impl<'i> From<Error<PrinterErrorKind>> for CompileError<'i> {
 impl<'i> From<parcel_sourcemap::SourceMapError> for CompileError<'i> {
   fn from(e: parcel_sourcemap::SourceMapError) -> CompileError<'i> {
     CompileError::SourceMapError(e)
-  }
-}
-
-impl<'i> From<Error<BundleErrorKind<'i>>> for CompileError<'i> {
-  fn from(e: Error<BundleErrorKind<'i>>) -> CompileError<'i> {
-    CompileError::BundleError(e)
   }
 }
 
