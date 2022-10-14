@@ -47,7 +47,7 @@ impl Fold for ResolveFold {
                   mark_span(&import_decl.src.span, self.mark_import_src_location),
                 );
                 ModuleItem::ModuleDecl(ModuleDecl::Import(ImportDecl {
-                  src: new_str(&resolved_url),
+                  src: Box::new(new_str(&resolved_url)),
                   ..import_decl
                 }))
               }
@@ -80,7 +80,7 @@ impl Fold for ResolveFold {
                 ModuleItem::ModuleDecl(ModuleDecl::ExportNamed(NamedExport {
                   span,
                   specifiers,
-                  src: Some(new_str(&resolved_url)),
+                  src: Some(Box::new(new_str(&resolved_url))),
                   type_only,
                   asserts,
                 }))
@@ -96,7 +96,7 @@ impl Fold for ResolveFold {
               );
               ModuleItem::ModuleDecl(ModuleDecl::ExportAll(ExportAll {
                 span,
-                src: new_str(&resolved_url),
+                src: Box::new(new_str(&resolved_url)),
                 asserts,
               }))
             }
@@ -127,11 +127,13 @@ impl Fold for ResolveFold {
               }
               if data_export_idx != -1 {
                 let mut i = -1;
+                let var = var.as_ref();
                 ModuleItem::ModuleDecl(ModuleDecl::ExportDecl(ExportDecl {
                   span,
-                  decl: Decl::Var(VarDecl {
+                  decl: Decl::Var(Box::new(VarDecl {
                     decls: var
                       .decls
+                      .clone()
                       .into_iter()
                       .map(|decl| {
                         i += 1;
@@ -196,8 +198,10 @@ impl Fold for ResolveFold {
                         }
                       })
                       .collect(),
-                    ..var
-                  }),
+                    span: DUMMY_SP,
+                    kind: var.kind,
+                    declare: var.declare,
+                  })),
                 }))
               } else {
                 ModuleItem::ModuleDecl(ModuleDecl::ExportDecl(ExportDecl {
@@ -221,7 +225,7 @@ impl Fold for ResolveFold {
                   decl: Decl::Fn(FnDecl {
                     ident: decl.ident.clone(),
                     declare: decl.declare,
-                    function: Function {
+                    function: Box::new(Function {
                       span: DUMMY_SP,
                       params: vec![],
                       decorators: vec![],
@@ -234,7 +238,7 @@ impl Fold for ResolveFold {
                       is_async: false,
                       type_params: None,
                       return_type: None,
-                    },
+                    }),
                   }),
                 }))
               } else {

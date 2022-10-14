@@ -34,7 +34,9 @@ impl Fold for HmrFold {
         span: DUMMY_SP,
         local: quote_ident!("__CREATE_HOT_CONTEXT__"),
       })],
-      src: new_str(&resolver.to_local_path(&(aleph_pkg_uri + "/runtime/core/hmr.ts"))),
+      src: Box::new(new_str(
+        &resolver.to_local_path(&(aleph_pkg_uri + "/runtime/core/hmr.ts")),
+      )),
       type_only: false,
       asserts: None,
     })));
@@ -80,7 +82,9 @@ impl Fold for HmrFold {
           import_name("__REACT_REFRESH_RUNTIME__"),
           import_name("__REACT_REFRESH__"),
         ],
-        src: new_str(&resolver.to_local_path(&(aleph_pkg_uri + "/runtime/react/refresh.ts"))),
+        src: Box::new(new_str(
+          &resolver.to_local_path(&(aleph_pkg_uri + "/runtime/react/refresh.ts")),
+        )),
         type_only: false,
         asserts: None,
       })));

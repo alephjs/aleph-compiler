@@ -3,7 +3,7 @@ use swc_ecmascript::ast::*;
 use swc_ecmascript::utils::quote_ident;
 
 pub fn rename_var_decl(new_name: &str, old: &str) -> ModuleItem {
-  ModuleItem::Stmt(Stmt::Decl(Decl::Var(VarDecl {
+  ModuleItem::Stmt(Stmt::Decl(Decl::Var(Box::new(VarDecl {
     span: DUMMY_SP,
     kind: VarDeclKind::Const,
     declare: false,
@@ -13,7 +13,7 @@ pub fn rename_var_decl(new_name: &str, old: &str) -> ModuleItem {
       init: Some(Box::new(Expr::Ident(quote_ident!(old)))),
       definite: false,
     }],
-  })))
+  }))))
 }
 
 pub fn window_assign(name: &str, expr: Expr) -> ModuleItem {
