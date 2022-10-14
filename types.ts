@@ -48,6 +48,10 @@ export interface Targets {
   samsung?: number;
 }
 
+export interface DependencyOptions {
+  removeImports: boolean;
+}
+
 export interface TransformCSSOptions {
   /** Whether to enable minification. */
   minify?: boolean;
@@ -65,7 +69,7 @@ export interface TransformCSSOptions {
    * are replaced with hashed placeholders that can be replaced with the final
    * urls later (after bundling). Dependencies are returned as part of the result.
    */
-  analyzeDependencies?: boolean;
+  analyzeDependencies?: DependencyOptions;
   /**
    * Replaces user action pseudo classes with class names that can be applied from JavaScript.
    * This is useful for polyfills, for example.
