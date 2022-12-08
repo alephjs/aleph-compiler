@@ -13,6 +13,7 @@ use lightningcss::targets::Browsers;
 use parcel_sourcemap::SourceMap;
 use serde::{Deserialize, Serialize};
 use std::collections::HashSet;
+use std::sync::{Arc, RwLock};
 
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -101,6 +102,7 @@ pub struct Drafts {
 
 pub fn compile<'i>(filename: String, code: &'i str, config: &Config) -> Result<TransformResult, CompileError<'i>> {
   let drafts = config.drafts.as_ref();
+  let warnings = Some(Arc::new(RwLock::new(Vec::new())));
   let mut stylesheet = StyleSheet::parse(
     &code,
     ParserOptions {
@@ -123,7 +125,8 @@ pub fn compile<'i>(filename: String, code: &'i str, config: &Config) -> Result<T
       },
       source_index: 0,
       error_recovery: false,
-      warnings: None,
+      warnings: warnings.clone(),
+      at_rule_parser: ParserOptions::default_at_rule_parser(),
     },
   )?;
   stylesheet.minify(MinifyOptions {
