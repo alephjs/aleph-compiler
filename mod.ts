@@ -1,5 +1,5 @@
-import { ensureDir } from "https://deno.land/std@0.155.0/fs/ensure_dir.ts";
-import { join } from "https://deno.land/std@0.155.0/path/mod.ts";
+import { ensureDir } from "https://deno.land/std@0.165.0/fs/ensure_dir.ts";
+import { join } from "https://deno.land/std@0.165.0/path/mod.ts";
 import init, {
   parcelCSS,
   parseDeps as parseDepsWasmFn,
