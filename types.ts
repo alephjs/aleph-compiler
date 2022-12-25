@@ -111,9 +111,9 @@ export interface TransformCSSResult {
 
 export interface CSSModulesConfig {
   /** The pattern to use when renaming class names and other identifiers. Default is `[hash]_[local]`. */
-  pattern: string;
+  pattern?: string;
   /** Whether to rename dashed identifiers, e.g. custom properties. */
-  dashedIdents: boolean;
+  dashedIdents?: boolean;
 }
 
 export type CSSModuleExports = {
