@@ -12,7 +12,7 @@ import { transform } from "https://deno.land/x/aleph_compiler@0.8.4/mod.ts";
 const code = `
 import { useState, useEffect } from "react"
 
-export default App() {
+export default function App() {
   const [msg, setMsg] = useState("...")
 
   useEffect(() => {
@@ -26,13 +26,12 @@ export default App() {
 `
 
 const ret = await transform("./app.tsx", code, {
-  importMap: {
+  importMap: JSON.stringify({
     imports: {
       "react": "https://esm.sh/react@18",
     }
-  },
+  }),
   jsxImportSource: "https://esm.sh/react@18",
-  isDev: true,
   sourceMap: true,
 })
 
