@@ -147,6 +147,7 @@ pub fn compile<'i>(filename: String, code: &'i str, config: &Config) -> Result<T
     minify: config.minify.unwrap_or(false),
     source_map: source_map.as_mut(),
     targets: config.targets,
+    project_root: None,
     analyze_dependencies: if let Some(analyze_dependencies) = &config.analyze_dependencies {
       Some(lightningcss::dependencies::DependencyOptions {
         remove_imports: analyze_dependencies.remove_imports,

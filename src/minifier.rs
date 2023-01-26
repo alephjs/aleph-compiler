@@ -39,7 +39,7 @@ impl VisitMut for MinifierPass {
             None
           },
           mangle: Some(MangleOptions {
-            top_level: true,
+            top_level: Some(true),
             ..Default::default()
           }),
           ..Default::default()
