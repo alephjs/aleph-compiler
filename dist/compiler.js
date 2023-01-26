@@ -21,19 +21,18 @@ function getUint8Memory0() {
 
 const cachedTextEncoder = new TextEncoder("utf-8");
 
-const encodeString =
-  (typeof cachedTextEncoder.encodeInto === "function"
-    ? function (arg, view) {
-      return cachedTextEncoder.encodeInto(arg, view);
-    }
-    : function (arg, view) {
-      const buf = cachedTextEncoder.encode(arg);
-      view.set(buf);
-      return {
-        read: arg.length,
-        written: buf.length,
-      };
-    });
+const encodeString = typeof cachedTextEncoder.encodeInto === "function"
+  ? function (arg, view) {
+    return cachedTextEncoder.encodeInto(arg, view);
+  }
+  : function (arg, view) {
+    const buf = cachedTextEncoder.encode(arg);
+    view.set(buf);
+    return {
+      read: arg.length,
+      written: buf.length,
+    };
+  };
 
 function passStringToWasm0(arg, malloc, realloc) {
   if (realloc === undefined) {
