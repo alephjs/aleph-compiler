@@ -1,17 +1,5 @@
 export type TransformOptions = {
   lang?: "ts" | "tsx" | "js" | "jsx";
-  alephPkgUri?: string;
-  importMap?: string;
-  globalVersion?: string;
-  graphVersions?: Record<string, string>;
-  isDev?: boolean;
-  sourceMap?: boolean;
-  jsxPragma?: string;
-  jsxPragmaFrag?: string;
-  jsxImportSource?: string;
-  reactRefresh?: boolean;
-  stripDataExport?: boolean;
-  minify?: { compress: boolean };
   target?:
     | "es2015"
     | "es2016"
@@ -21,6 +9,18 @@ export type TransformOptions = {
     | "es2020"
     | "es2021"
     | "es2022";
+  alephPkgUri?: string;
+  importMap?: string;
+  globalVersion?: string;
+  graphVersions?: Record<string, string>;
+  isDev?: boolean;
+  reactRefresh?: boolean;
+  jsxPragma?: string;
+  jsxPragmaFrag?: string;
+  jsxImportSource?: string;
+  stripDataExport?: boolean;
+  minify?: { compress: boolean };
+  sourceMap?: boolean;
 };
 
 export type TransformResult = {

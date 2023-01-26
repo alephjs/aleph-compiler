@@ -1,12 +1,11 @@
-import { ensureDir } from "https://deno.land/std@0.165.0/fs/ensure_dir.ts";
-import { join } from "https://deno.land/std@0.165.0/path/mod.ts";
+import { ensureDir } from "https://deno.land/std@0.170.0/fs/ensure_dir.ts";
+import { join } from "https://deno.land/std@0.170.0/path/mod.ts";
 import init, {
   parcelCSS,
   parseDeps as parseDepsWasmFn,
   transform as transformWasmFn,
 } from "./dist/compiler.js";
 import wasm from "./dist/wasm.js";
-import { VERSION } from "./version.ts";
 import type {
   DependencyDescriptor,
   TransformCSSOptions,
@@ -14,6 +13,7 @@ import type {
   TransformOptions,
   TransformResult,
 } from "./types.ts";
+import { VERSION } from "./version.ts";
 
 let modulesCache: string | null = null;
 let wasmReady: Promise<void> | boolean = false;
@@ -46,7 +46,6 @@ async function existsFile(path: string): Promise<boolean> {
 
 /** initialize the compiler wasm module. */
 export async function initWasm() {
-  const start = performance.now();
   if (import.meta.url.startsWith("https://") && modulesCache) {
     const cacheDir = join(
       modulesCache,
@@ -61,25 +60,24 @@ export async function initWasm() {
         }),
       );
     } else {
-      const wasmData = wasm();
+      const wasmData = await wasm();
       await init(wasmData);
       await ensureDir(cacheDir);
-      await Deno.writeFile(cachePath, wasmData);
+      await Deno.writeFile(cachePath, new Uint8Array(wasmData));
     }
   } else {
-    await init(wasm());
+    await init(await wasm());
   }
   wasmReady = true;
-  console.debug(
-    `Initialized aleph-compiler WebAssembly in ${
-      (performance.now() - start).toFixed(2)
-    }ms.`,
-  );
 }
 
-async function checkWasmReady() {
+async function getWasmReady() {
   if (wasmReady === true) return;
-  if (wasmReady === false) wasmReady = initWasm();
+  if (wasmReady === false) {
+    wasmReady = initWasm().catch(() => {
+      wasmReady = false;
+    });
+  }
   await wasmReady;
 }
 
@@ -89,7 +87,7 @@ export async function parseDeps(
   code: string,
   options: Pick<TransformOptions, "importMap" | "lang"> = {},
 ): Promise<DependencyDescriptor[]> {
-  await checkWasmReady();
+  await getWasmReady();
   return parseDepsWasmFn(specifier, code, options);
 }
 
@@ -114,7 +112,7 @@ export async function transform(
   code: string,
   options: TransformOptions = {},
 ): Promise<TransformResult> {
-  await checkWasmReady();
+  await getWasmReady();
   try {
     return transformWasmFn(specifier, code, options);
   } catch (error) {
@@ -149,6 +147,6 @@ export async function transformCSS(
   code: string,
   options: TransformCSSOptions = {},
 ): Promise<TransformCSSResult> {
-  await checkWasmReady();
+  await getWasmReady();
   return parcelCSS(specifier, code, options);
 }
