@@ -2,12 +2,12 @@
 
 # Aleph.js Compiler
 
-The compiler of Aleph.js written in Rust, powered by [swc](https://github.com/swc-project/swc) and [parcel-css](https://github.com/parcel-bundler/parcel-css).
+The compiler of Aleph.js written in Rust, powered by [swc](https://swc.rs) and [lightningcss](https://lightningcss.dev/).
 
 ## Usage
 
 ```ts
-import { transform } from "https://deno.land/x/aleph_compiler@0.7.5/mod.ts";
+import { transform } from "https://deno.land/x/aleph_compiler@0.8.4/mod.ts";
 
 const code = `
 import { useState, useEffect } from "react"
@@ -32,7 +32,8 @@ const ret = await transform("./app.tsx", code, {
     }
   },
   jsxImportSource: "https://esm.sh/react@18",
-  isDev: true
+  isDev: true,
+  sourceMap: true,
 })
 
 console.log(ret.code, ret.map)
