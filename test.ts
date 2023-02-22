@@ -1,7 +1,7 @@
 import {
   assertEquals,
   assertStringIncludes,
-} from "https://deno.land/std@0.170.0/testing/asserts.ts";
+} from "https://deno.land/std@0.175.0/testing/asserts.ts";
 import { transform, transformCSS } from "./mod.ts";
 
 Deno.test("aleph compiler", async (t) => {

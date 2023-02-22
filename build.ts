@@ -1,7 +1,7 @@
-import { dim } from "https://deno.land/std@0.170.0/fmt/colors.ts";
-import { ensureDir } from "https://deno.land/std@0.170.0/fs/ensure_dir.ts";
-import { encode } from "https://deno.land/std@0.170.0/encoding/base64.ts";
-import { dirname } from "https://deno.land/std@0.170.0/path/mod.ts";
+import { dim } from "https://deno.land/std@0.175.0/fmt/colors.ts";
+import { ensureDir } from "https://deno.land/std@0.175.0/fs/ensure_dir.ts";
+import { encode } from "https://deno.land/std@0.175.0/encoding/base64.ts";
+import { dirname } from "https://deno.land/std@0.175.0/path/mod.ts";
 
 async function run(cmd: string[]) {
   const p = Deno.run({
