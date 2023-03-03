@@ -101,6 +101,7 @@ impl Fold for ResolveFold {
               }))
             }
             // match: export const data = { ... }
+            // match: export const muation = { ... }
             ModuleDecl::ExportDecl(ExportDecl {
               decl: Decl::Var(var),
               span,
@@ -113,7 +114,7 @@ impl Fold for ResolveFold {
                   if let Pat::Ident(bi) = &decl.name {
                     if decl.init.is_some() {
                       match bi.id.sym.as_ref() {
-                        "data" | "GET" | "POST" | "PUT" | "PATCH" | "DELETE" => {
+                        "data" | "mutation" | "GET" | "POST" | "PUT" | "PATCH" | "DELETE" => {
                           data_export_idx = i;
                           data_export_name = bi.id.sym.to_string();
                           break;
@@ -142,7 +143,7 @@ impl Fold for ResolveFold {
                             span: DUMMY_SP,
                             value: true,
                           }))));
-                          if data_export_name == "data" {
+                          if data_export_name == "data" || data_export_name == "mutation" {
                             if let Some(expr) = decl.init {
                               if let Expr::Object(obj) = *expr {
                                 init = Some(Box::new(Expr::Object(ObjectLit {
@@ -161,14 +162,19 @@ impl Fold for ResolveFold {
                                             }))),
                                           })))
                                         }
-                                        Prop::KeyValue(KeyValueProp { key, .. }) => {
-                                          PropOrSpread::Prop(Box::new(Prop::KeyValue(KeyValueProp {
-                                            key,
-                                            value: Box::new(Expr::Lit(Lit::Bool(Bool {
-                                              span: DUMMY_SP,
-                                              value: true,
-                                            }))),
-                                          })))
+                                        Prop::KeyValue(KeyValueProp { key, value, .. }) => {
+                                          // if value is a boolean, we don't need to wrap it
+                                          if let Expr::Lit(Lit::Bool(_)) = *value {
+                                            PropOrSpread::Prop(Box::new(Prop::KeyValue(KeyValueProp { key, value })))
+                                          } else {
+                                            PropOrSpread::Prop(Box::new(Prop::KeyValue(KeyValueProp {
+                                              key,
+                                              value: Box::new(Expr::Lit(Lit::Bool(Bool {
+                                                span: DUMMY_SP,
+                                                value: true,
+                                              }))),
+                                            })))
+                                          }
                                         }
                                         Prop::Method(MethodProp { key, .. }) => {
                                           PropOrSpread::Prop(Box::new(Prop::KeyValue(KeyValueProp {
@@ -210,13 +216,13 @@ impl Fold for ResolveFold {
                 }))
               }
             }
-            // match: export function GET { ... }
+            // match: export function data/mutation/GET/POST/PUT/PATCH/DELETE { ... }
             ModuleDecl::ExportDecl(ExportDecl {
               decl: Decl::Fn(decl),
               span,
             }) => {
               let is_api_method = match decl.ident.sym.as_ref() {
-                "GET" | "POST" | "PUT" | "PATCH" | "DELETE" => true,
+                "data" | "mutation" | "GET" | "POST" | "PUT" | "PATCH" | "DELETE" => true,
                 _ => false,
               };
               if self.strip_data_export && is_api_method {

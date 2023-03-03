@@ -224,13 +224,19 @@ fn strip_data_export() {
     import { json } from "./helper.ts"
     const count = 0;
     export const data = {
-      suspense: true,
-      get: (req: Request) => {
+      defer: true,
+      fake: false,
+      fetch: (req: Request) => {
         return json({ count })
       },
-      post(req: Request) {
+    }
+    export const mutation = {
+      POST: (req: Request) => {
         return json({ count })
-      }
+      },
+      DELETE: (req: Request) => {
+        return json({ count })
+      },
     }
     export const GET = (req: Request) => {
       return json({ count })
@@ -265,9 +271,12 @@ fn strip_data_export() {
     },
   );
   assert!(code.contains("export const data = {"));
-  assert!(code.contains("suspense: true,"));
-  assert!(code.contains("get: true,"));
-  assert!(code.contains("post: true\n}"));
+  assert!(code.contains("defer: true,"));
+  assert!(code.contains("fake: false,"));
+  assert!(code.contains("fetch: true\n}"));
+  assert!(code.contains("export const mutation = {"));
+  assert!(code.contains("POST: true,"));
+  assert!(code.contains("DELETE: true\n"));
   assert!(code.contains("export const GET = true"));
   assert!(code.contains("export const POST = true"));
   assert!(code.contains("export const PUT = true"));
