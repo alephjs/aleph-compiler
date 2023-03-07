@@ -87,7 +87,12 @@ impl Fold for ResolveFold {
               }
             }
             // match: export * from "https://esm.sh/react"
-            ModuleDecl::ExportAll(ExportAll { src, span, asserts }) => {
+            ModuleDecl::ExportAll(ExportAll {
+              src,
+              span,
+              asserts,
+              type_only,
+            }) => {
               let mut resolver = self.resolver.borrow_mut();
               let resolved_url = resolver.resolve(
                 src.value.as_ref(),
@@ -98,6 +103,7 @@ impl Fold for ResolveFold {
                 span,
                 src: Box::new(new_str(&resolved_url)),
                 asserts,
+                type_only,
               }))
             }
             // match: export const data = { ... }

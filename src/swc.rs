@@ -15,7 +15,6 @@ use swc_ecma_transforms::typescript::strip;
 use swc_ecma_transforms::{compat, fixer, helpers, hygiene, react, Assumptions};
 use swc_ecmascript::ast::{EsVersion, Module, Program};
 use swc_ecmascript::codegen::text_writer::JsWriter;
-use swc_ecmascript::codegen::Node;
 use swc_ecmascript::parser::lexer::Lexer;
 use swc_ecmascript::parser::{EsConfig, StringInput, Syntax, TsConfig};
 use swc_ecmascript::visit::{as_folder, Fold, FoldWith};
@@ -259,6 +258,7 @@ impl SWC {
             module_mark: None,
             top_level: true,
             top_retain: vec![],
+            preserve_imports_with_side_effects: false,
           },
           unresolved_mark
         ),
@@ -338,7 +338,7 @@ impl SWC {
         cm: self.source_map.clone(),
         wr: writer,
       };
-      program.emit_with(&mut emitter).unwrap();
+      emitter.emit_program(&program).unwrap();
     }
 
     // output
