@@ -148,15 +148,6 @@ impl Resolver {
       // fix remote url to local path if allowed
       if self.resolve_remote_deps {
         import_url = self.to_local_path(&import_url);
-        if !self.is_dev {
-          if let Some(global_version) = &self.global_version {
-            if import_url.contains("?") {
-              import_url = format!("{}&v={}", import_url, global_version);
-            } else {
-              import_url = format!("{}?v={}", import_url, global_version);
-            }
-          }
-        }
       }
     } else {
       // apply graph version if exists

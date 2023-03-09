@@ -137,13 +137,13 @@ fn import_resolving() {
     }, 1000)
   "#;
   let (code, _) = transform("./pages/blog/$id.tsx", source, false, &EmitOptions::default());
-  assert!(code.contains("\"/-/esm.sh/react@18?v=1.0.0\""));
+  assert!(code.contains("\"/-/esm.sh/react@18\""));
   assert!(code.contains("\"../../foo.ts?v=100\""));
   assert!(code.contains("\"./Layout.tsx?v=1.0.0\""));
-  assert!(code.contains("\"/-/esm.sh/@fullcalendar/daygrid?css&dev&module&v=1.0.0\""));
+  assert!(code.contains("\"/-/esm.sh/@fullcalendar/daygrid?css&dev&module\""));
   assert!(code.contains("\"../../style/app.css?module&v=1.0.0\""));
-  assert!(code.contains("import(\"/-/esm.sh/asksomeonelse?v=1.0.0\")"));
-  assert!(code.contains("new Worker(\"/-/esm.sh/asksomeonelse?v=1.0.0\")"));
+  assert!(code.contains("import(\"/-/esm.sh/asksomeonelse\")"));
+  assert!(code.contains("new Worker(\"/-/esm.sh/asksomeonelse\")"));
 }
 
 #[test]
@@ -167,9 +167,7 @@ fn jsx_automtic() {
       ..Default::default()
     },
   );
-  assert!(
-    code.contains("import { jsx as _jsx, Fragment as _Fragment } from \"/-/esm.sh/react@18/jsx-runtime?v=1.0.0\"")
-  );
+  assert!(code.contains("import { jsx as _jsx, Fragment as _Fragment } from \"/-/esm.sh/react@18/jsx-runtime\""));
   assert!(code.contains("_jsx(_Fragment, {"));
   assert!(code.contains("_jsx(\"h1\", {"));
   assert!(code.contains("children: \"Hello world!\""));
