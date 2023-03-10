@@ -25,8 +25,8 @@ fn transform(specifer: &str, source: &str, is_dev: bool, options: &EmitOptions) 
     importmap,
     graph_versions,
     Some("1.0.0".into()),
-    is_dev,
     true,
+    is_dev,
   )));
   let (code, _) = module.transform(resolver.clone(), options).unwrap();
   println!("{}", code);

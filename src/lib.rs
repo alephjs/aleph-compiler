@@ -25,18 +25,19 @@ use wasm_bindgen::prelude::{wasm_bindgen, JsValue};
 #[serde(deny_unknown_fields, rename_all = "camelCase")]
 pub struct Options {
   pub aleph_pkg_uri: Option<String>,
-  pub is_dev: Option<bool>,
   pub lang: Option<String>,
+  pub target: Option<String>,
   pub import_map: Option<String>,
   pub global_version: Option<String>,
   pub graph_versions: Option<HashMap<String, String>>,
-  pub target: Option<String>,
+  pub strip_data_export: Option<bool>,
+  pub resolve_remote_module: Option<bool>,
+  pub is_dev: Option<bool>,
+  pub source_map: Option<bool>,
   pub jsx_pragma: Option<String>,
   pub jsx_pragma_frag: Option<String>,
   pub jsx_import_source: Option<String>,
   pub react_refresh: Option<bool>,
-  pub strip_data_export: Option<bool>,
-  pub source_map: Option<bool>,
   pub minify: Option<MinifierOptions>,
 }
 
@@ -95,8 +96,8 @@ pub fn transform(specifier: &str, code: &str, options: JsValue) -> Result<JsValu
     importmap,
     options.graph_versions.unwrap_or_default(),
     options.global_version,
+    options.resolve_remote_module.unwrap_or_default(),
     options.is_dev.unwrap_or_default(),
-    true,
   )));
   let target = match options.target.unwrap_or_default().as_str() {
     "es2015" => EsVersion::Es2015,
@@ -107,7 +108,7 @@ pub fn transform(specifier: &str, code: &str, options: JsValue) -> Result<JsValu
     "es2020" => EsVersion::Es2020,
     "es2021" => EsVersion::Es2021,
     "es2022" => EsVersion::Es2022,
-    _ => EsVersion::Es2022, // latest version
+    _ => EsVersion::Es2022, // use latest version
   };
   let module = SWC::parse(specifier, code, target, options.lang).expect("could not parse the module");
   let (code, map) = module

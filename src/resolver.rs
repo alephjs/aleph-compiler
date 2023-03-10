@@ -35,9 +35,10 @@ pub struct Resolver {
   pub global_version: Option<String>,
   /// the graph versions
   pub graph_versions: HashMap<String, String>,
-  // internal
+  /// should resolve remote deps
+  pub resolve_remote_deps: bool,
+  // import maps
   import_map: ImportMap,
-  resolve_remote_deps: bool,
 }
 
 impl Resolver {
@@ -47,8 +48,8 @@ impl Resolver {
     import_map: ImportMap,
     graph_versions: HashMap<String, String>,
     global_version: Option<String>,
-    is_dev: bool,
     resolve_remote_deps: bool,
+    is_dev: bool,
   ) -> Self {
     Resolver {
       aleph_pkg_uri: aleph_pkg_uri.into(),

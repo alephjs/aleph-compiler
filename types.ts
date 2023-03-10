@@ -1,26 +1,29 @@
+export type EsmaVersion =
+  | "es2015"
+  | "es2016"
+  | "es2017"
+  | "es2018"
+  | "es2019"
+  | "es2020"
+  | "es2021"
+  | "es2022";
+
 export type TransformOptions = {
-  lang?: "ts" | "tsx" | "js" | "jsx";
-  target?:
-    | "es2015"
-    | "es2016"
-    | "es2017"
-    | "es2018"
-    | "es2019"
-    | "es2020"
-    | "es2021"
-    | "es2022";
   alephPkgUri?: string;
+  lang?: "ts" | "tsx" | "js" | "jsx";
+  target?: EsmaVersion;
   importMap?: string;
   globalVersion?: string;
   graphVersions?: Record<string, string>;
+  resolveRemoteModule?: boolean;
+  stripDataExport?: boolean;
   isDev?: boolean;
   reactRefresh?: boolean;
+  sourceMap?: boolean;
   jsxPragma?: string;
   jsxPragmaFrag?: string;
   jsxImportSource?: string;
-  stripDataExport?: boolean;
   minify?: { compress: boolean };
-  sourceMap?: boolean;
 };
 
 export type TransformResult = {
