@@ -83,6 +83,7 @@ Deno.test("aleph compiler", async (t) => {
       `,
       {
         jsxImportSource: "https://esm.sh/react",
+        resolveRemoteModule: true,
       },
     );
     assertStringIncludes(
