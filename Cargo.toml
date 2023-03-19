@@ -1,6 +1,6 @@
 [package]
 name = "aleph-compiler"
-version = "0.9.2"
+version = "0.9.3"
 description = "The compiler of Aleph.js written in Rust."
 repository = "https://github.com/alephjs/aleph.js"
 authors = ["The Aleph.js authors"]

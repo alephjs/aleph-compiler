@@ -1,7 +1,7 @@
 import {
   assertEquals,
   assertStringIncludes,
-} from "https://deno.land/std@0.175.0/testing/asserts.ts";
+} from "https://deno.land/std@0.180.0/testing/asserts.ts";
 import { transform, transformCSS } from "./mod.ts";
 
 Deno.test("aleph compiler", async (t) => {
@@ -42,7 +42,6 @@ Deno.test("aleph compiler", async (t) => {
         },
       },
     );
-
     assertEquals(
       ret.code,
       `.foo{background:#ff0;border-radius:2px;transition:background .2s}.foo.bar{color:green}@media ((color) or (hover)) and (min-width:1024px){.a{color:green}}`,
@@ -54,7 +53,6 @@ Deno.test("aleph compiler", async (t) => {
       "./mod.ts",
       await Deno.readTextFile("./mod.ts"),
     );
-
     assertStringIncludes(ret.code, `function transform(`);
   });
 
@@ -69,11 +67,10 @@ Deno.test("aleph compiler", async (t) => {
         }
       `,
     );
-
     assertStringIncludes(ret.code, `React.createElement("h1"`);
   });
 
-  await t.step("transform jsx (jsxImportSource)", async () => {
+  await t.step("transform jsx (preserve)", async () => {
     const ret = await transform(
       "./app.jsx",
       `
@@ -82,6 +79,22 @@ Deno.test("aleph compiler", async (t) => {
         }
       `,
       {
+        jsx: "preserve",
+      },
+    );
+    assertStringIncludes(ret.code, `<h1>Hello world!</h1>`);
+  });
+
+  await t.step("transform jsx (automatic)", async () => {
+    const ret = await transform(
+      "./app.jsx",
+      `
+        export default function App() {
+          return <h1>Hello world!</h1>
+        }
+      `,
+      {
+        jsx: "automatic",
         jsxImportSource: "https://esm.sh/react",
         resolveRemoteModule: true,
       },
@@ -99,7 +112,6 @@ Deno.test("aleph compiler", async (t) => {
       await Deno.readTextFile("./testdata/gsi-client.js"),
       { minify: { compress: true } },
     );
-
     assertStringIncludes(ret.code, `this.default_gsi`);
   });
 });
