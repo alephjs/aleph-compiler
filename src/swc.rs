@@ -120,7 +120,8 @@ impl SWC {
       let is_dev = resolver.borrow().is_dev;
       let is_ts = extname == "ts" || extname == "mts" || extname == "tsx";
       let jsxt = options.jsx.as_deref().unwrap_or("classic");
-      let is_jsx = jsxt != "preserve" && (extname == "jsx" || extname == "tsx");
+      let jsx_preserve = jsxt == "preserve";
+      let is_jsx = extname == "jsx" || extname == "tsx";
       let react_options = if jsxt == "automatic" {
         let mut resolver = resolver.borrow_mut();
         let import_source = options.jsx_import_source.as_deref().unwrap_or("react");
@@ -151,7 +152,7 @@ impl SWC {
       let assumptions = Assumptions::all();
       let passes = chain!(
         swc_ecma_transforms::resolver(unresolved_mark, top_level_mark, is_ts),
-        Optional::new(react::jsx_src(is_dev, self.source_map.clone()), is_jsx),
+        Optional::new(react::jsx_src(is_dev, self.source_map.clone()), is_jsx && is_dev),
         resolve_fold(resolver.clone(), options.strip_data_export, false),
         decorators::decorators(decorators::Config {
           legacy: true,
@@ -250,13 +251,14 @@ impl SWC {
             self.source_map.clone(),
             Some(&self.comments),
             react::Options {
+              next: Some(true),
               use_builtins: Some(true),
               development: Some(is_dev),
               ..react_options
             },
             top_level_mark
           ),
-          is_jsx
+          is_jsx && !jsx_preserve
         ),
         Optional::new(hmr(resolver.clone()), is_dev && !specifier_is_remote),
         dce::dce(
@@ -278,7 +280,11 @@ impl SWC {
           }),
           options.minify.is_some()
         ),
-        hygiene(),
+        hygiene::hygiene_with_config(hygiene::Config {
+          keep_class_names: true,
+          top_level_mark: top_level_mark,
+          ..Default::default()
+        }),
         fixer(Some(&self.comments)),
       );
 
