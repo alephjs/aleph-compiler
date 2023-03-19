@@ -20,6 +20,7 @@ export type TransformOptions = {
   isDev?: boolean;
   reactRefresh?: boolean;
   sourceMap?: boolean;
+  jsx?: "automatic" | "classic" | "preserve";
   jsxPragma?: string;
   jsxPragmaFrag?: string;
   jsxImportSource?: string;

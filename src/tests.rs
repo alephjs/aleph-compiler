@@ -147,6 +147,56 @@ fn import_resolving() {
 }
 
 #[test]
+fn jsx_preserve() {
+  let source = r#"
+    export default function App() {
+      return (
+        <>
+          <h1 className="title">Hello world!</h1>
+        </>
+      )
+    }
+  "#;
+  let (code, _) = transform(
+    "./app.tsx",
+    source,
+    false,
+    &EmitOptions {
+      jsx: Some("preserve".into()),
+      ..Default::default()
+    },
+  );
+  assert!(code.contains("<h1 className=\"title\">Hello world!</h1>"));
+  assert!(code.contains("<>"));
+  assert!(code.contains("</>"));
+}
+
+#[test]
+fn jsx_classic() {
+  let source = r#"
+    import React from "react"
+    export default function App() {
+      return (
+        <>
+          <h1 className="title">Hello world!</h1>
+        </>
+      )
+    }
+  "#;
+  let (code, _) = transform(
+    "./app.tsx",
+    source,
+    false,
+    &EmitOptions {
+      jsx: Some("classic".into()),
+      ..Default::default()
+    },
+  );
+  assert!(code.contains("React.createElement(\"h1\""));
+  assert!(code.contains("React.createElement(React.Fragment,"));
+}
+
+#[test]
 fn jsx_automtic() {
   let source = r#"
     /** @jsxImportSource https://esm.sh/react@18 */
@@ -163,6 +213,7 @@ fn jsx_automtic() {
     source,
     false,
     &EmitOptions {
+      jsx: Some("automatic".into()),
       jsx_import_source: Some("https://esm.sh/react@18".to_owned()),
       ..Default::default()
     },
@@ -194,6 +245,7 @@ fn react_refresh() {
     true,
     &EmitOptions {
       react_refresh: true,
+      jsx: Some("automatic".into()),
       jsx_import_source: Some("https://esm.sh/react@18".to_owned()),
       ..Default::default()
     },
@@ -264,6 +316,7 @@ fn strip_data_export() {
     false,
     &EmitOptions {
       strip_data_export: true,
+      jsx: Some("automatic".into()),
       jsx_import_source: Some("https://esm.sh/react@18".to_owned()),
       ..Default::default()
     },

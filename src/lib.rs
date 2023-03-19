@@ -34,6 +34,7 @@ pub struct Options {
   pub resolve_remote_module: Option<bool>,
   pub is_dev: Option<bool>,
   pub source_map: Option<bool>,
+  pub jsx: Option<String>,
   pub jsx_pragma: Option<String>,
   pub jsx_pragma_frag: Option<String>,
   pub jsx_import_source: Option<String>,
@@ -116,6 +117,7 @@ pub fn transform(specifier: &str, code: &str, options: JsValue) -> Result<JsValu
       resolver.clone(),
       &EmitOptions {
         target,
+        jsx: options.jsx,
         jsx_pragma: options.jsx_pragma,
         jsx_pragma_frag: options.jsx_pragma_frag,
         jsx_import_source: options.jsx_import_source,

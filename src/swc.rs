@@ -23,6 +23,7 @@ use swc_ecmascript::visit::{as_folder, Fold, FoldWith};
 #[derive(Clone)]
 pub struct EmitOptions {
   pub target: EsVersion,
+  pub jsx: Option<String>,
   pub jsx_pragma: Option<String>,
   pub jsx_pragma_frag: Option<String>,
   pub jsx_import_source: Option<String>,
@@ -36,6 +37,7 @@ impl Default for EmitOptions {
   fn default() -> Self {
     EmitOptions {
       target: EsVersion::Es2022,
+      jsx: None,
       jsx_pragma: None,
       jsx_pragma_frag: None,
       jsx_import_source: None,
@@ -58,7 +60,6 @@ pub struct SWC {
 impl SWC {
   /// parse source code.
   pub fn parse(specifier: &str, source: &str, target: EsVersion, lang: Option<String>) -> Result<Self, anyhow::Error> {
-    print!("--- {} {:?} {:?}\n", specifier, target, lang);
     let source_map = SourceMap::default();
     let source_file = source_map.new_source_file(FileName::Real(Path::new(specifier).to_path_buf()), source.into());
     let sm = &source_map;
@@ -112,14 +113,19 @@ impl SWC {
       let unresolved_mark = Mark::new();
       let top_level_mark = Mark::fresh(Mark::root());
       let specifier_is_remote = resolver.borrow().specifier_is_remote;
+      let extname = Path::new(&self.specifier)
+        .extension()
+        .unwrap_or_default()
+        .to_ascii_lowercase();
       let is_dev = resolver.borrow().is_dev;
-      let is_ts =
-        self.specifier.ends_with(".ts") || self.specifier.ends_with(".mts") || self.specifier.ends_with(".tsx");
-      let is_jsx = self.specifier.ends_with(".tsx") || self.specifier.ends_with(".jsx");
-      let react_options = if let Some(jsx_import_source) = &options.jsx_import_source {
+      let is_ts = extname == "ts" || extname == "mts" || extname == "tsx";
+      let jsxt = options.jsx.as_deref().unwrap_or("classic");
+      let is_jsx = jsxt != "preserve" && (extname == "jsx" || extname == "tsx");
+      let react_options = if jsxt == "automatic" {
         let mut resolver = resolver.borrow_mut();
+        let import_source = options.jsx_import_source.as_deref().unwrap_or("react");
         let runtime = if is_dev { "/jsx-dev-runtime" } else { "/jsx-runtime" };
-        let import_source = resolver.resolve(&(jsx_import_source.to_owned() + runtime), false, None);
+        let import_source = resolver.resolve(&(import_source.to_owned() + runtime), false, None);
         let import_source = import_source
           .split("?")
           .next()
